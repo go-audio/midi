@@ -2,6 +2,7 @@ package midi
 
 import (
 	"bytes"
+	"fmt"
 	"os"
 	"path/filepath"
 	"testing"
@@ -49,7 +50,6 @@ func TestParsingFile(t *testing.T) {
 	}
 
 	for _, exp := range expectations {
-		t.Log(exp.path)
 		path, _ := filepath.Abs(exp.path)
 		f, err := os.Open(path)
 		if err != nil {
@@ -77,18 +77,15 @@ func TestParsingFile(t *testing.T) {
 		if len(p.Tracks) == 0 {
 			t.Fatal("Tracks not parsed")
 		}
-		t.Logf("%d tracks\n", len(p.Tracks))
 		for i, tr := range p.Tracks {
-			t.Log("track", i)
-			if tName := tr.Name(); tName != exp.trackNames[i] {
-				t.Fatalf("expected name of track %d to be %s but got %s (%q)", i, exp.trackNames[i], tName, tName)
-			}
-			if bpm := tr.Tempo(); bpm != exp.bpms[i] {
-				t.Fatalf("expected tempo of track %d to be %d but got %d", i, exp.bpms[i], bpm)
-			}
-			for _, ev := range tr.Events {
-				t.Log(ev)
-			}
+			t.Run(fmt.Sprintf("Track %s", tr.Name()), func(t *testing.T) {
+				if tName := tr.Name(); tName != exp.trackNames[i] {
+					t.Fatalf("expected name of track %d to be %s but got %s (%q)", i, exp.trackNames[i], tName, tName)
+				}
+				if bpm := tr.Tempo(); bpm != exp.bpms[i] {
+					t.Fatalf("expected tempo of track %d to be %d but got %d", i, exp.bpms[i], bpm)
+				}
+			})
 		}
 
 	}

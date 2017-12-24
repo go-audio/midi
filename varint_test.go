@@ -2,6 +2,7 @@ package midi
 
 import (
 	"bytes"
+	"fmt"
 	"testing"
 )
 
@@ -24,13 +25,14 @@ func TestEncodeDecodeVarint(t *testing.T) {
 		10: {[]byte{0x81, 0x10}, 144},
 	}
 
-	for i, tc := range testCases {
-		t.Logf("test case %d - %#v\n", i, tc.input)
-		if o, _ := DecodeVarint(tc.input); o != tc.output {
-			t.Fatalf("expected %d\ngot\n%d\n", tc.output, o)
-		}
-		if encoded := EncodeVarint(tc.output); bytes.Compare(encoded, tc.input) != 0 {
-			t.Fatalf("%d - expected %#v\ngot\n%#v\n", tc.output, tc.input, encoded)
-		}
+	for _, tc := range testCases {
+		t.Run(fmt.Sprintf("%#v", tc.input), func(t *testing.T) {
+			if o, _ := DecodeVarint(tc.input); o != tc.output {
+				t.Fatalf("expected %d\ngot\n%d\n", tc.output, o)
+			}
+			if encoded := EncodeVarint(tc.output); bytes.Compare(encoded, tc.input) != 0 {
+				t.Fatalf("%d - expected %#v\ngot\n%#v\n", tc.output, tc.input, encoded)
+			}
+		})
 	}
 }

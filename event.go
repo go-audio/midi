@@ -139,7 +139,9 @@ func Meta(channel int) *Event {
 // an MTrk event. Notice that running status occurs across delta-times.
 // See http://www.indiana.edu/~emusic/etext/MIDI/chapter3_MIDI4.shtml
 type Event struct {
-	TimeDelta    uint32
+	TimeDelta uint32
+	// AbsTicks is the absolute number of ticks since the start of the file.
+	AbsTicks     uint64
 	MsgType      uint8
 	MsgChan      uint8
 	Note         uint8

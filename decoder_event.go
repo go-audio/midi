@@ -23,6 +23,7 @@ func (p *Decoder) parseEvent() (nextChunkType, error) {
 	if err != nil {
 		return eventChunk, err
 	}
+	p.currentTicks += uint64(timeDelta)
 
 	// status byte give us the msg type and channel.
 	statusByte, err := p.ReadByte()
@@ -31,7 +32,7 @@ func (p *Decoder) parseEvent() (nextChunkType, error) {
 	}
 	readBytes++
 
-	e := &Event{TimeDelta: timeDelta}
+	e := &Event{TimeDelta: timeDelta, AbsTicks: p.currentTicks}
 	e.MsgType = (statusByte & 0xF0) >> 4
 	e.MsgChan = statusByte & 0x0F
 
@@ -180,7 +181,9 @@ func (p *Decoder) parseEvent() (nextChunkType, error) {
 		}
 
 	default:
-		fmt.Printf("skipped %#X - %s - %#X\n", statusByte, string(statusByte), e.MsgType)
+		if p.Debug {
+			fmt.Printf("skipped %#X - %s - %#X\n", statusByte, string(statusByte), e.MsgType)
+		}
 		return eventChunk, nil
 	}
 
@@ -481,7 +484,9 @@ func (p *Decoder) parseMetaMsg(e *Event) (nextChunkType, bool, error) {
 			tmp := make([]byte, l)
 			err = p.Read(tmp)
 		default:
-			fmt.Printf("Skipped meta cmd %#X\n", e.Cmd)
+			if p.Debug {
+				fmt.Printf("Skipped meta cmd %#X\n", e.Cmd)
+			}
 		}
 	}
 

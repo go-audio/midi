@@ -55,7 +55,9 @@ const (
 
 */
 type Decoder struct {
-	r io.Reader
+	r            io.Reader
+	currentTicks uint64
+	Debug        bool
 
 	Ch chan *Track
 	/*

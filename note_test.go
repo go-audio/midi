@@ -1,6 +1,9 @@
 package midi
 
-import "testing"
+import (
+	"fmt"
+	"testing"
+)
 
 var epsilon float64 = 0.00000001
 
@@ -29,11 +32,12 @@ func TestKeyToInt(t *testing.T) {
 		{"C", 3, 60},
 	}
 
-	for i, tc := range testCases {
-		t.Logf("test case %s %d [%d]\n", tc.key, tc.octave, i)
-		if o := KeyInt(tc.key, tc.octave); o != tc.n {
-			t.Fatalf("expected %s %d -> %d\ngot\n%d\n", tc.key, tc.octave, tc.n, o)
-		}
+	for _, tc := range testCases {
+		t.Run(fmt.Sprintf("%s %d", tc.key, tc.octave), func(t *testing.T) {
+			if o := KeyInt(tc.key, tc.octave); o != tc.n {
+				t.Fatalf("expected %s %d -> %d\ngot\n%d\n", tc.key, tc.octave, tc.n, o)
+			}
+		})
 	}
 }
 
@@ -55,11 +59,12 @@ func TestKeyFreq(t *testing.T) {
 		{"C", 3, 261.6255653005986},
 	}
 
-	for i, tc := range testCases {
-		t.Logf("test case %d\n", i)
-		if o := KeyFreq(tc.key, tc.octave); !floatEquals(o, tc.freq) {
-			t.Fatalf("expected %s %d -> %v\ngot\n%v\n", tc.key, tc.octave, tc.freq, o)
-		}
+	for _, tc := range testCases {
+		t.Run(fmt.Sprintf("%s %d", tc.key, tc.octave), func(t *testing.T) {
+			if o := KeyFreq(tc.key, tc.octave); !floatEquals(o, tc.freq) {
+				t.Fatalf("expected %s %d -> %v\ngot\n%v\n", tc.key, tc.octave, tc.freq, o)
+			}
+		})
 	}
 }
 
@@ -80,10 +85,11 @@ func TestFreqToNote(t *testing.T) {
 		{KeyInt("C", 3), 261.6255653005986},
 	}
 
-	for i, tc := range testCases {
-		t.Logf("test case %d\n", i)
-		if note := FreqToNote(tc.freq); note != tc.note {
-			t.Fatalf("expected freq %v -> %v\ngot\n%v\n", tc.freq, tc.note, note)
-		}
+	for _, tc := range testCases {
+		t.Run(fmt.Sprintf("%s", tc.freq), func(t *testing.T) {
+			if note := FreqToNote(tc.freq); note != tc.note {
+				t.Fatalf("expected freq %v -> %v\ngot\n%v\n", tc.freq, tc.note, note)
+			}
+		})
 	}
 }
