@@ -17,6 +17,9 @@ type Track struct {
 
 // Add schedules the passed event after x beats (relative to the previous event)
 func (t *Track) Add(beatDelta float64, e *Event) {
+	if t == nil || e == nil {
+		return
+	}
 	if t.ticksPerBeat == 0 {
 		t.ticksPerBeat = 96
 	}
