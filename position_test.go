@@ -17,6 +17,7 @@ func Test_TickPosition(t *testing.T) {
 		{name: "75", absTicks: 75, ppq: 96, want: Position{Bar: 0, Beat: 0, Div: 3, Ticks: 3}},
 		{name: "ppq", absTicks: 96, ppq: 96, want: Position{Bar: 0, Beat: 1, Div: 0, Ticks: 0}},
 		{name: "250", absTicks: 250, ppq: 96, want: Position{Bar: 0, Beat: 2, Div: 2, Ticks: 10}},
+		{name: "high ppq", absTicks: 1250, ppq: 480, want: Position{Bar: 0, Beat: 2, Div: 2, Ticks: 50}},
 	}
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
