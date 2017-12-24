@@ -36,3 +36,26 @@ func TestEncodeDecodeVarint(t *testing.T) {
 		})
 	}
 }
+
+func TestDecodeVarint(t *testing.T) {
+	tests := []struct {
+		name  string
+		buf   []byte
+		wantX uint32
+		wantN int
+	}{
+		{name: "empty decoder", buf: []byte{}, wantX: 0, wantN: 0},
+		{name: "fall through", buf: []byte{0x81}, wantX: 1, wantN: 0},
+	}
+	for _, tt := range tests {
+		t.Run(tt.name, func(t *testing.T) {
+			gotX, gotN := DecodeVarint(tt.buf)
+			if gotX != tt.wantX {
+				t.Errorf("DecodeVarint() gotX = %v, want %v", gotX, tt.wantX)
+			}
+			if gotN != tt.wantN {
+				t.Errorf("DecodeVarint() gotN = %v, want %v", gotN, tt.wantN)
+			}
+		})
+	}
+}
