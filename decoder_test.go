@@ -5,6 +5,7 @@ import (
 	"fmt"
 	"os"
 	"path/filepath"
+	"reflect"
 	"testing"
 )
 
@@ -89,4 +90,113 @@ func TestParsingFile(t *testing.T) {
 		}
 
 	}
+}
+
+func TestDecoder_parseTrack(t *testing.T) {
+	toEvTime := func(e *Event) evTime {
+		return evTime{Note: e.Note, timeDelta: e.TimeDelta, absTicks: e.AbsTicks}
+	}
+	tests := []struct {
+		name     string
+		path     string
+		trackIDX int
+		events   []evTime
+	}{
+		{name: "unquantized", path: "fixtures/unquantized.mid", events: []evTime{
+			{Note: 0, timeDelta: 0, absTicks: 0},
+			{Note: 0, timeDelta: 0, absTicks: 0},
+			{Note: 0, timeDelta: 0, absTicks: 0},
+			{Note: 36, timeDelta: 0, absTicks: 0},
+			{Note: 36, timeDelta: 58, absTicks: 58},
+			{Note: 38, timeDelta: 17, absTicks: 75},
+			{Note: 38, timeDelta: 20, absTicks: 95},
+			{Note: 38, timeDelta: 0, absTicks: 95},
+			{Note: 38, timeDelta: 48, absTicks: 143},
+			{Note: 38, timeDelta: 0, absTicks: 143},
+			{Note: 36, timeDelta: 48, absTicks: 191},
+			{Note: 38, timeDelta: 31, absTicks: 222},
+			{Note: 36, timeDelta: 28, absTicks: 250},
+			{Note: 38, timeDelta: 16, absTicks: 266},
+			{Note: 38, timeDelta: 21, absTicks: 287},
+			{Note: 38, timeDelta: 0, absTicks: 287},
+			{Note: 38, timeDelta: 48, absTicks: 335},
+			{Note: 38, timeDelta: 0, absTicks: 335},
+			{Note: 36, timeDelta: 48, absTicks: 383},
+			{Note: 38, timeDelta: 9, absTicks: 392},
+			{Note: 36, timeDelta: 42, absTicks: 434},
+			{Note: 38, timeDelta: 25, absTicks: 459},
+			{Note: 38, timeDelta: 20, absTicks: 479},
+			{Note: 38, timeDelta: 0, absTicks: 479},
+			{Note: 38, timeDelta: 48, absTicks: 527},
+			{Note: 38, timeDelta: 0, absTicks: 527},
+			{Note: 36, timeDelta: 48, absTicks: 575},
+			{Note: 38, timeDelta: 9, absTicks: 584},
+			{Note: 36, timeDelta: 50, absTicks: 634},
+			{Note: 38, timeDelta: 16, absTicks: 650},
+			{Note: 38, timeDelta: 21, absTicks: 671},
+			{Note: 38, timeDelta: 0, absTicks: 671},
+			{Note: 38, timeDelta: 48, absTicks: 719},
+			{Note: 38, timeDelta: 0, absTicks: 719},
+			{Note: 36, timeDelta: 48, absTicks: 767},
+			{Note: 38, timeDelta: 9, absTicks: 776},
+			{Note: 36, timeDelta: 43, absTicks: 819},
+			{Note: 38, timeDelta: 23, absTicks: 842},
+			{Note: 38, timeDelta: 21, absTicks: 863},
+			{Note: 38, timeDelta: 0, absTicks: 863},
+			{Note: 38, timeDelta: 48, absTicks: 911},
+			{Note: 38, timeDelta: 0, absTicks: 911},
+			{Note: 36, timeDelta: 48, absTicks: 959},
+			{Note: 38, timeDelta: 8, absTicks: 967},
+			{Note: 36, timeDelta: 57, absTicks: 1024},
+			{Note: 38, timeDelta: 10, absTicks: 1034},
+			{Note: 38, timeDelta: 21, absTicks: 1055},
+			{Note: 38, timeDelta: 0, absTicks: 1055},
+			{Note: 38, timeDelta: 48, absTicks: 1103},
+			{Note: 38, timeDelta: 0, absTicks: 1103},
+			{Note: 36, timeDelta: 48, absTicks: 1151},
+			{Note: 38, timeDelta: 9, absTicks: 1160},
+			{Note: 36, timeDelta: 43, absTicks: 1203},
+			{Note: 38, timeDelta: 23, absTicks: 1226},
+			{Note: 38, timeDelta: 21, absTicks: 1247},
+			{Note: 38, timeDelta: 0, absTicks: 1247},
+			{Note: 38, timeDelta: 48, absTicks: 1295},
+			{Note: 38, timeDelta: 0, absTicks: 1295},
+			{Note: 36, timeDelta: 48, absTicks: 1343},
+			{Note: 38, timeDelta: 9, absTicks: 1352},
+			{Note: 36, timeDelta: 50, absTicks: 1402},
+			{Note: 38, timeDelta: 16, absTicks: 1418},
+			{Note: 38, timeDelta: 21, absTicks: 1439},
+			{Note: 38, timeDelta: 0, absTicks: 1439},
+			{Note: 38, timeDelta: 48, absTicks: 1487},
+			{Note: 38, timeDelta: 0, absTicks: 1487},
+			{Note: 38, timeDelta: 49, absTicks: 1536},
+			{Note: 0, timeDelta: 0, absTicks: 1536}},
+		},
+	}
+	for _, tt := range tests {
+		t.Run(tt.name, func(t *testing.T) {
+			path, _ := filepath.Abs(tt.path)
+			f, err := os.Open(path)
+			if err != nil {
+				t.Fatal(err)
+			}
+			defer f.Close()
+			p := NewDecoder(f)
+			if err := p.Parse(); err != nil {
+				t.Fatal(err)
+			}
+			track := p.Tracks[tt.trackIDX]
+			for i, e := range track.Events {
+				if evt := toEvTime(e); !reflect.DeepEqual(evt, tt.events[i]) {
+					t.Fatalf("[%d] Expected %+v, got %+v", i, tt.events[i], evt)
+				}
+			}
+		})
+	}
+}
+
+type evTime struct {
+	Note      uint8
+	timeDelta uint32
+	absTicks  uint64
 }

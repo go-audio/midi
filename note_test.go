@@ -86,7 +86,7 @@ func TestFreqToNote(t *testing.T) {
 	}
 
 	for _, tc := range testCases {
-		t.Run(fmt.Sprintf("%s", tc.freq), func(t *testing.T) {
+		t.Run(fmt.Sprintf("%2.f", tc.freq), func(t *testing.T) {
 			if note := FreqToNote(tc.freq); note != tc.note {
 				t.Fatalf("expected freq %v -> %v\ngot\n%v\n", tc.freq, tc.note, note)
 			}
