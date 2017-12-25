@@ -12,6 +12,20 @@ type Position struct {
 	Ticks uint32
 }
 
+// ToTicks converts a position to an absolute tick number.
+func (p Position) ToTicks(ppq uint32) uint64 {
+	ppqUint64 := uint64(ppq)
+	barLen := 4 * ppqUint64
+	divLen := ppqUint64 / 4
+
+	ticks := uint64(p.Bar) * barLen
+	ticks += (uint64(p.Beat) * ppqUint64)
+	ticks += uint64(p.Div) * divLen
+	ticks += uint64(p.Ticks)
+
+	return ticks
+}
+
 // TickPosition returns the position of the passed tick
 func TickPosition(tick uint64, ppq uint32) Position {
 	// TODO: support more than 4/4 time signature
