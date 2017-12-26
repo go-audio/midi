@@ -9,7 +9,7 @@ func Test_TickPosition(t *testing.T) {
 	tests := []struct {
 		name     string
 		absTicks uint64
-		ppq      uint32
+		ppq      uint16
 		want     Position
 	}{
 		{name: "One quantized", absTicks: 0, ppq: 96, want: Position{Bar: 0, Beat: 0, Div: 0, Ticks: 0}},
@@ -40,7 +40,7 @@ func TestPosition_ToTicks(t *testing.T) {
 	tests := []struct {
 		name     string
 		absTicks uint64
-		ppq      uint32
+		ppq      uint16
 		pos      Position
 	}{
 		{name: "One quantized", absTicks: 0, ppq: 96, pos: Position{Bar: 0, Beat: 0, Div: 0, Ticks: 0}},

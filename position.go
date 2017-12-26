@@ -13,7 +13,7 @@ type Position struct {
 }
 
 // ToTicks converts a position to an absolute tick number.
-func (p Position) ToTicks(ppq uint32) uint64 {
+func (p Position) ToTicks(ppq uint16) uint64 {
 	ppqUint64 := uint64(ppq)
 	barLen := 4 * ppqUint64
 	divLen := ppqUint64 / 4
@@ -27,19 +27,19 @@ func (p Position) ToTicks(ppq uint32) uint64 {
 }
 
 // TickPosition returns the position of the passed tick
-func TickPosition(tick uint64, ppq uint32) Position {
+func TickPosition(tick uint64, ppq uint16) Position {
 	// TODO: support more than 4/4 time signature
 	if tick == 0 {
 		return Position{}
 	}
 	barLen := 4 * uint64(ppq)
-	divLen := ppq / 4
+	divLen := uint32(ppq) / 4
 
 	p := Position{Bar: (tick / barLen)}
 	leftOver := tick % uint64(barLen)
 	p.Beat = uint32(leftOver / uint64(ppq))
 
-	if rest := uint32(leftOver) % ppq; rest != 0 {
+	if rest := uint32(leftOver) % uint32(ppq); rest != 0 {
 		p.Div = rest / divLen
 		p.Ticks = rest % divLen
 	}
@@ -48,7 +48,7 @@ func TickPosition(tick uint64, ppq uint32) Position {
 
 // Position returns the start position of the event
 // in index zero.
-func (e *Event) Position(ppq uint32) Position {
+func (e *Event) Position(ppq uint16) Position {
 	if e == nil {
 		return Position{}
 	}
