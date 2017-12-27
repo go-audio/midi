@@ -1,6 +1,7 @@
 package midi
 
 import (
+	"reflect"
 	"testing"
 )
 
@@ -33,6 +34,44 @@ func TestTrack_Add(t *testing.T) {
 				ticksPerBeat: tt.ticksPerBeat,
 			}
 			tr.Add(tt.args.beatDelta, tt.args.e)
+		})
+	}
+}
+
+func TestTrack_AddAfterDelta(t *testing.T) {
+	type args struct {
+		ticks uint32
+		e     *Event
+	}
+	tests := []struct {
+		name     string
+		events   []*Event
+		args     args
+		expected *Event
+	}{
+		{name: "nil event",
+			events:   []*Event{},
+			args:     args{ticks: 0, e: nil},
+			expected: &Event{TimeDelta: 0},
+		},
+		{name: "next beat",
+			events:   []*Event{},
+			args:     args{ticks: 96, e: &Event{Copyright: "Foo"}},
+			expected: &Event{TimeDelta: 96, Copyright: "Foo"},
+		},
+	}
+	for _, tt := range tests {
+		t.Run(tt.name, func(t *testing.T) {
+			tr := &Track{
+				Events: tt.events,
+			}
+			tr.AddAfterDelta(tt.args.ticks, tt.args.e)
+
+			if len(tr.Events) > 0 {
+				if last := tr.Events[len(tr.Events)-1]; !reflect.DeepEqual(last, tt.expected) {
+					t.Errorf("Expected the last event to be %#v but got %#v", tt.expected, last)
+				}
+			}
 		})
 	}
 }

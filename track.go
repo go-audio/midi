@@ -28,6 +28,19 @@ func (t *Track) Add(beatDelta float64, e *Event) {
 	t.Size += uint32(len(EncodeVarint(e.TimeDelta))) + e.Size()
 }
 
+// AddAfterDelta schedules the passed event after x beats (relative to the previous event)
+func (t *Track) AddAfterDelta(ticks uint32, e *Event) {
+	if t == nil || e == nil {
+		return
+	}
+	if t.ticksPerBeat == 0 {
+		t.ticksPerBeat = 96
+	}
+	e.TimeDelta = ticks
+	t.Events = append(t.Events, e)
+	t.Size += uint32(len(EncodeVarint(e.TimeDelta))) + e.Size()
+}
+
 // Tempo returns the tempo of the track if set, 0 otherwise
 func (t *Track) Tempo() int {
 	if t == nil {
