@@ -8,7 +8,9 @@ import (
 	"github.com/mattetti/audio"
 )
 
-var Notes = []string{"C", "C#", "D", "D#", "E", "F", "F#", "G", "G#", "A", "A#", "B"}
+var (
+	Notes = []string{"C", "C#", "D", "D#", "E", "F", "F#", "G", "G#", "A", "A#", "B"}
+)
 
 var notesToInt = map[string]int{
 	"C":  0,
