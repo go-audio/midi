@@ -234,7 +234,7 @@ func (e *Event) String() string {
 	if k, ok = EventMap[e.MsgType]; !ok {
 		k = fmt.Sprintf("%#X", e.MsgType)
 	}
-	out := fmt.Sprintf("Ch %d @ %d \t%s", e.MsgChan, e.TimeDelta, k)
+	out := fmt.Sprintf("Ch %d @ %d (%d) \t%s", e.MsgChan, e.TimeDelta, e.AbsTicks, k)
 	if e.Velocity > 0 {
 		out += fmt.Sprintf(" Vel: %d", e.Velocity)
 	}
@@ -242,7 +242,7 @@ func (e *Event) String() string {
 		out += fmt.Sprintf(" Note: %s", NoteToName(int(e.Note)))
 	}
 	if e.Cmd != 0 {
-		out = fmt.Sprintf("Ch %d @ %d \t%s", e.MsgChan, e.TimeDelta, MetaCmdMap[e.Cmd])
+		out = fmt.Sprintf("Ch %d @ %d (%d) \t%s", e.MsgChan, e.TimeDelta, e.AbsTicks, MetaCmdMap[e.Cmd])
 		switch e.Cmd {
 		case MetaByteMap["Sequence/Track name"]:
 			out = fmt.Sprintf("%s -> %s", out, e.SeqTrackName)

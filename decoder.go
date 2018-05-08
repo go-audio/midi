@@ -100,7 +100,12 @@ func (d *Decoder) CurrentTrack() *Track {
 	return d.Tracks[len(d.Tracks)-1]
 }
 
+// Parse is a deprecated API, Decode() should be used instead.
 func (d *Decoder) Parse() error {
+	return d.Decode()
+}
+
+func (d *Decoder) Decode() error {
 	var err error
 	var code [4]byte
 

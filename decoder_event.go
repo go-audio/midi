@@ -13,7 +13,7 @@ func (p *Decoder) parseEvent() (nextChunkType, error) {
 	// <delta-time> is stored as a variable-length quantity. It represents
 	// the amount of time before the following event. If the first event in
 	// a track occurs at the very beginning of a track, or if two
-	// events occur simultaineously, a delta-time of zero is used.
+	// events occur simultaneously, a delta-time of zero is used.
 	// Delta-times are always present. (Not storing delta-times of 0
 	// requires at least two bytes for any other value, and most
 	// delta-times aren't zero.) Delta-time is in some fraction of a beat
@@ -23,7 +23,6 @@ func (p *Decoder) parseEvent() (nextChunkType, error) {
 	if err != nil {
 		return eventChunk, err
 	}
-	p.currentTicks += uint64(timeDelta)
 
 	// status byte give us the msg type and channel.
 	statusByte, err := p.ReadByte()
@@ -32,9 +31,13 @@ func (p *Decoder) parseEvent() (nextChunkType, error) {
 	}
 	readBytes++
 
-	e := &Event{TimeDelta: timeDelta, AbsTicks: p.currentTicks}
+	e := &Event{TimeDelta: timeDelta}
 	e.MsgType = (statusByte & 0xF0) >> 4
 	e.MsgChan = statusByte & 0x0F
+	if e.MsgType != 0x0 {
+		p.currentTicks += uint64(timeDelta)
+		e.AbsTicks = p.currentTicks
+	}
 
 	nextChunk := eventChunk
 
