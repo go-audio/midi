@@ -105,6 +105,7 @@ func (d *Decoder) Parse() error {
 	return d.Decode()
 }
 
+// Decode decodes the MIDI file into a structure available from the decoder.
 func (d *Decoder) Decode() error {
 	var err error
 	var code [4]byte
@@ -158,7 +159,7 @@ func (d *Decoder) Decode() error {
 			exact specifications of time-code-based tracks, but also allows
 			milisecond-based tracks by specifying 25|frames/sec and a
 			resolution of 40 units per frame. If the events in a file are stored
-			with a bit resolution of thirty-framel time code, the division word
+			with a bit resolution of thirty-frames time code, the division word
 			would be E250 hex.
 		*/
 		d.TimeFormat = TimeCodeTF
