@@ -23,6 +23,7 @@ func (p *Decoder) parseEvent() (nextChunkType, error) {
 	if err != nil {
 		return eventChunk, err
 	}
+	p.currentTicks += uint64(timeDelta)
 
 	// status byte give us the msg type and channel.
 	statusByte, err := p.ReadByte()
@@ -31,13 +32,9 @@ func (p *Decoder) parseEvent() (nextChunkType, error) {
 	}
 	readBytes++
 
-	e := &Event{TimeDelta: timeDelta}
+	e := &Event{TimeDelta: timeDelta, AbsTicks: p.currentTicks}
 	e.MsgType = (statusByte & 0xF0) >> 4
 	e.MsgChan = statusByte & 0x0F
-	if e.MsgType != 0x0 {
-		p.currentTicks += uint64(timeDelta)
-		e.AbsTicks = p.currentTicks
-	}
 
 	nextChunk := eventChunk
 
@@ -132,9 +129,12 @@ func (p *Decoder) parseEvent() (nextChunkType, error) {
 		if e.NewProgram, err = p.Uint7(); err != nil {
 			return eventChunk, err
 		}
-		if e.NewValue, err = p.Uint7(); err != nil {
-			return eventChunk, err
-		}
+		// Program changes only contain 1 value
+		/*
+			if e.NewValue, err = p.Uint7(); err != nil {
+				return eventChunk, err
+			}
+		*/
 
 	// Channel Pressure (Aftertouch)
 	// This message is most often sent by pressing down on the key after it "bottoms out".
@@ -172,7 +172,7 @@ func (p *Decoder) parseEvent() (nextChunkType, error) {
 		// Relative signed value where 2000H is the center.
 		e.RelPitchBend = int16(e.AbsPitchBend) - 0x2000
 
-	//  Meta
+	// Meta
 	// All meta-events start with FF followed by the command (xx), the length,
 	// or number of bytes that will contain data (nn), and the actual data (dd).
 	case 0xF:
@@ -199,7 +199,7 @@ func (p *Decoder) parseEvent() (nextChunkType, error) {
 }
 
 // parseMetaMsg processes meta events and returns the next chunk to look at
-// if the event was successfuly parsed and an error
+// if the event was successfully parsed and an error
 func (p *Decoder) parseMetaMsg(e *Event) (nextChunkType, bool, error) {
 	var err error
 	// channels aren't really channels
@@ -214,17 +214,17 @@ func (p *Decoder) parseMetaMsg(e *Event) (nextChunkType, bool, error) {
 		switch e.Cmd {
 
 		// Sequence Number
-		//This optional event, which must occur at the beginning of a
-		//track, before any nonzero delta-times, and before any
-		//transmittable MIDI events, specifies the number of a sequence. In a
-		//format 2 MIDI File, it is used to identify each "pattern" so that a
-		//"song" sequence using the Cue message to refer to the patterns. If
-		//the ID numbers are omitted, the sequences' locations in order in the
-		//file are used as defaults. In a format 0 or 1 MIDI File, which only
-		//contain one sequence, this number should be contained in the first
-		//(or only) track. If transfer of several multitrack sequences is
-		//required, this must be done as a group of format 1 files, each with
-		//a different sequence number.
+		// This optional event, which must occur at the beginning of a track,
+		// before any nonzero delta-times, and before any transmittable MIDI
+		// events, specifies the number of a sequence. In a format 2 MIDI File,
+		// it is used to identify each "pattern" so that a "song" sequence using
+		// the Cue message to refer to the patterns. If the ID numbers are
+		// omitted, the sequences' locations in order in the file are used as
+		// defaults. In a format 0 or 1 MIDI File, which only contain one
+		// sequence, this number should be contained in the first (or only)
+		// track. If transfer of several multitrack sequences is required, this
+		// must be done as a group of format 1 files, each with a different
+		// sequence number.
 		case 0x0:
 			if b, err = p.ReadByte(); err != nil {
 				return eventChunk, false, err
@@ -238,17 +238,17 @@ func (p *Decoder) parseMetaMsg(e *Event) (nextChunkType, bool, error) {
 			}
 
 		// Text Event
-		//Any amount of text describing anything. It is a good idea to put
-		//a text event right at the beginning of a track, with the name of the
-		//track, a description of its intended orchestration, and any other
-		//information which the user wants to put there. Text events may also
-		//occur at other times in a track, to be used as lyrics, or descriptions
-		//of cue points. The text in this event should be printable ASCII
-		//characters for maximum interchange. However, other characters codes
-		//using the high-order bit may be used for interchange of files between
-		//different programs on the same computer which supports an extended
-		//character set. Programs on a computer which does not support
-		//non-ASCII characters should ignore those characters.
+		// Any amount of text describing anything. It is a good idea to put a
+		// text event right at the beginning of a track, with the name of the
+		// track, a description of its intended orchestration, and any other
+		// information which the user wants to put there. Text events may also
+		// occur at other times in a track, to be used as lyrics, or
+		// descriptions of cue points. The text in this event should be
+		// printable ASCII characters for maximum interchange. However, other
+		// characters codes using the high-order bit may be used for interchange
+		// of files between different programs on the same computer which
+		// supports an extended character set. Programs on a computer which does
+		// not support non-ASCII characters should ignore those characters.
 		case 0x01:
 			if e.Text, _, err = p.VarLenTxt(); err != nil {
 				return eventChunk, false, err
@@ -261,18 +261,18 @@ func (p *Decoder) parseMetaMsg(e *Event) (nextChunkType, bool, error) {
 			}
 
 		// Sequence/Track Name
-		//If in a format 0 track, or the first track in a format 1 file, the
-		//name of the sequence. Otherwise, the name of the track.
+		// If in a format 0 track, or the first track in a format 1 file, the
+		// name of the sequence. Otherwise, the name of the track.
 		case 0x03:
 			if e.SeqTrackName, _, err = p.VarLenTxt(); err != nil {
 				return eventChunk, false, err
 			}
 
 		// Instrument name
-		//A description of the type of instrumentation to be used in that track.
-		//May be used with the MIDI Prefix meta-event to specify which MIDI
-		//channel the description applies to, or the channel may be specified
-		//as text in the event itself.
+		// A description of the type of instrumentation to be used in that
+		// track. May be used with the MIDI Prefix meta-event to specify which
+		// MIDI channel the description applies to, or the channel may be
+		// specified as text in the event itself.
 		//
 		case 0x04:
 			if e.InstrumentName, _, err = p.VarLenTxt(); err != nil {
@@ -286,8 +286,8 @@ func (p *Decoder) parseMetaMsg(e *Event) (nextChunkType, bool, error) {
 			}
 
 		// Marker
-		//Normally in a format 0 track, or the first track in a format 1
-		//file. The name of that point in the sequence, such as a rehersal letter
+		// Normally in a format 0 track, or the first track in a format 1 file.
+		// The name of that point in the sequence, such as a rehersal letter
 		case 0x06:
 			if e.Marker, _, err = p.VarLenTxt(); err != nil {
 				return eventChunk, false, err
@@ -300,14 +300,14 @@ func (p *Decoder) parseMetaMsg(e *Event) (nextChunkType, bool, error) {
 			}
 
 		// MIDI Channel Prefix
-		//The MIDI channel (0-15) containted in this event may be used
-		//to associate a MIDI channel with all events which follow, including
-		//System exclusive and meta-events. This channel is "effective" until
-		//the next normal MIDI event (which contains a channel) or the next MIDI
-		//Channel Prefix meta-event. If MIDI channels refer to "tracks", this
-		//message may into a format 0 file, keeping their non-MIDI data
-		//associated with a track. This capability is also present in Yamaha's
-		//ESEQ file format.
+		// The MIDI channel (0-15) containted in this event may be used to
+		// associate a MIDI channel with all events which follow, including
+		// System exclusive and meta-events. This channel is "effective" until
+		// the next normal MIDI event (which contains a channel) or the next
+		// MIDI Channel Prefix meta-event. If MIDI channels refer to "tracks",
+		// this message may into a format 0 file, keeping their non-MIDI data
+		// associated with a track. This capability is also present in Yamaha's
+		// ESEQ file format.
 		case 0x20:
 			var b byte
 			if b, err = p.ReadByte(); err != nil {
@@ -322,9 +322,9 @@ func (p *Decoder) parseMetaMsg(e *Event) (nextChunkType, bool, error) {
 			}
 
 		// End of track
-		//This event is not optional. It is included so that an exact
-		//ending point may be specified for the track, so that an exect length,
-		//which is necessary for tracks which are looped or concatenated.
+		// This event is not optional. It is included so that an exact ending
+		// point may be specified for the track, so that an exact length, which
+		// is necessary for tracks which are looped or concatenated.
 		case 0x2F:
 			_, err = p.ReadByte()
 			return trackChunk, true, err

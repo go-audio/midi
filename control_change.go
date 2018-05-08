@@ -7,7 +7,8 @@ type ControlChangeEvent struct {
 	Name    string
 }
 
-var CCNames = map[int]string{
+// CCNames is a map of Control Changes
+var CCNames = map[uint8]string{
 	0:   "Bank Select",
 	1:   "Modulation Wheel or Lever",
 	2:   "Breath Controller",

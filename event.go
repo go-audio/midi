@@ -241,6 +241,9 @@ func (e *Event) String() string {
 	if e.MsgType == EventByteMap["NoteOn"] || e.MsgType == EventByteMap["NoteOff"] {
 		out += fmt.Sprintf(" Note: %s", NoteToName(int(e.Note)))
 	}
+	if e.MsgType == EventByteMap["ControlChange"] {
+		out += fmt.Sprintf(" - %s - Value: %d", CCNames[e.Controller], e.NewValue)
+	}
 	if e.Cmd != 0 {
 		out = fmt.Sprintf("Ch %d @ %d (%d) \t%s", e.MsgChan, e.TimeDelta, e.AbsTicks, MetaCmdMap[e.Cmd])
 		switch e.Cmd {

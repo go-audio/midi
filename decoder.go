@@ -2,6 +2,7 @@ package midi
 
 import (
 	"encoding/binary"
+	"errors"
 	"fmt"
 	"io"
 )
@@ -229,11 +230,11 @@ func (d *Decoder) VarLen() (val uint32, readBytes uint32, err error) {
 	}
 
 	val, nUsed := DecodeVarint(buf)
-	return val, uint32(nUsed), nil
+	return val, n + uint32(nUsed), nil
 }
 
-// VarLengthTxt Returns a variable length text string
-// as well as the amount of bytes read
+// VarLenTxt Returns a variable length text string as well as the amount of
+// bytes read
 func (d *Decoder) VarLenTxt() (string, uint32, error) {
 	var l uint32
 	var err error
@@ -243,8 +244,14 @@ func (d *Decoder) VarLenTxt() (string, uint32, error) {
 		return "", n, err
 	}
 	buf := make([]byte, l)
-	err = d.Read(buf)
-	return string(buf), n, err
+	m, err := d.r.Read(buf)
+	if err != nil {
+		return string(buf), n + uint32(m), err
+	}
+	if uint32(m) != l {
+		err = errors.New("couldn't read full var length text")
+	}
+	return string(buf), n + uint32(m), err
 }
 
 func (d *Decoder) ReadByte() (byte, error) {
@@ -253,7 +260,7 @@ func (d *Decoder) ReadByte() (byte, error) {
 	return b, err
 }
 
-// read reads n bytes from the parser's reader and stores them into the provided dst,
+// Read reads n bytes from the parser's reader and stores them into the provided dst,
 // which must be a pointer to a fixed-size value.
 func (d *Decoder) Read(dst interface{}) error {
 	return binary.Read(d.r, binary.BigEndian, dst)

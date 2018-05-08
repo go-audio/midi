@@ -44,7 +44,7 @@ func TestParsingFile(t *testing.T) {
 		trackNames          []string
 		bpms                []int
 	}{
-		{"fixtures/elise.mid", 1, 4, 960, MetricalTF, []string{"Track 0", "F\xfcr Elise", "http://www.forelise.com/", ""}, []int{69, 0, 0, 0}},
+		{"fixtures/elise.mid", 1, 4, 960, MetricalTF, []string{"Track 0", "F\xfcr Elise", "http://www.forelise.com/", "Composed by Ludwig van Beethoven"}, []int{69, 0, 0, 0}},
 		{"fixtures/elise1track.mid", 0, 1, 480, MetricalTF, []string{"F"}, []int{69}},
 		{"fixtures/bossa.mid", 0, 1, 96, MetricalTF, []string{"bossa 1"}, []int{0}},
 		{"fixtures/closedHat.mid", 0, 1, 96, MetricalTF, []string{"01 4th Hat Closed Side"}, []int{0}},
@@ -81,7 +81,7 @@ func TestParsingFile(t *testing.T) {
 		for i, tr := range p.Tracks {
 			t.Run(fmt.Sprintf("Track %s", tr.Name()), func(t *testing.T) {
 				if tName := tr.Name(); tName != exp.trackNames[i] {
-					t.Fatalf("expected name of track %d to be %s but got %s (%q)", i, exp.trackNames[i], tName, tName)
+					t.Fatalf("expected name of track %d to be %s but got %s -> (%q)", i, exp.trackNames[i], tName, tName)
 				}
 				if bpm := tr.Tempo(); bpm != exp.bpms[i] {
 					t.Fatalf("expected tempo of track %d to be %d but got %d", i, exp.bpms[i], bpm)
