@@ -29,7 +29,10 @@ func (cd *ChordDefinition) WithRoot(root string) *ChordDefinition {
 }
 
 func (cd *ChordDefinition) String() string {
-	return fmt.Sprintf("%s %s", strings.ToUpper(cd.Root), cd.Name)
+	if len(cd.Root) > 0 {
+		return fmt.Sprintf("%s %s", strings.ToUpper(cd.Root), cd.Name)
+	}
+	return cd.Name
 }
 
 var (
