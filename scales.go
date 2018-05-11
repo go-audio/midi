@@ -43,6 +43,8 @@ var (
 		DiminishedScale:      {Name: DiminishedScale, HalfSteps: []int{2, 1, 2, 1, 2, 1, 2}},
 		MajorPentatonicScale: {Name: MajorPentatonicScale, HalfSteps: []int{2, 2, 3, 2}},
 		MinorPentatonicScale: {Name: MinorPentatonicScale, HalfSteps: []int{3, 2, 2, 3}},
+		DorianScale:          {Name: DorianScale, HalfSteps: []int{2, 1, 2, 2, 2, 1}},
+		//
 		JapInSenScale:        {Name: JapInSenScale, HalfSteps: []int{1, 4, 2, 3}},
 		MajorBebopScale:      {Name: MajorBebopScale, HalfSteps: []int{2, 2, 1, 2, 1, 1, 2}},
 		DominantBebopScale:   {Name: DominantBebopScale, HalfSteps: []int{2, 2, 1, 2, 2, 1, 1}},
@@ -52,7 +54,6 @@ var (
 		NeapolitanScale:      {Name: NeapolitanScale, HalfSteps: []int{1, 2, 2, 2, 2, 2}},
 		NeapolitanMinorScale: {Name: NeapolitanMinorScale, HalfSteps: []int{1, 2, 2, 2, 1, 3}},
 		HungarianMinorScale:  {Name: HungarianMinorScale, HalfSteps: []int{2, 1, 3, 1, 1, 3}},
-		DorianScale:          {Name: DorianScale, HalfSteps: []int{2, 1, 2, 2, 2, 1}},
 		PhrygianScale:        {Name: PhrygianScale, HalfSteps: []int{1, 2, 2, 2, 1, 2}},
 		LydianScale:          {Name: LydianScale, HalfSteps: []int{2, 2, 2, 1, 2, 2}},
 		MixolydianScale:      {Name: MixolydianScale, HalfSteps: []int{2, 2, 1, 2, 2, 1}},

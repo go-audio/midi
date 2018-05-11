@@ -1,11 +1,35 @@
 package midi
 
+import (
+	"fmt"
+	"strings"
+)
+
 // ChordDefinition defines chords by name and by defining the interval between
 // adjacent notes on the chromatic scale (half steps) to create the chord.
 type ChordDefinition struct {
-	Name      string
-	Abbrev    string
+	// Root isn't usually defined until the definition is used
+	Root string
+	// Name is the English name of the chord
+	Name string
+	// Abbrev is the English abbreviation for the chord
+	Abbrev string
+	// HalfSteps are the number of half steps between the chord's notes
 	HalfSteps []uint
+}
+
+// WithRoot returns a copy of the chord definition with the chord root set.
+func (cd *ChordDefinition) WithRoot(root string) *ChordDefinition {
+	return &ChordDefinition{
+		Root:      root,
+		Name:      cd.Name,
+		Abbrev:    cd.Abbrev,
+		HalfSteps: cd.HalfSteps,
+	}
+}
+
+func (cd *ChordDefinition) String() string {
+	return fmt.Sprintf("%s %s", strings.ToUpper(cd.Root), cd.Name)
 }
 
 var (
@@ -31,6 +55,9 @@ var (
 			// 2 note chord
 			Name: "Fifth", Abbrev: "5",
 			HalfSteps: []uint{7},
+		},
+		{
+			Name: "Minor Seventh", Abbrev: "m7", HalfSteps: []uint{3, 4, 3},
 		},
 	}
 	// OtherChordDefs are less common chord definitions
@@ -122,9 +149,6 @@ var (
 		},
 		{
 			Name: "Major Seventh add 13th", Abbrev: "Maj7add13", HalfSteps: []uint{4, 3, 4, 10},
-		},
-		{
-			Name: "Minor Seventh", Abbrev: "m7", HalfSteps: []uint{3, 4, 3},
 		},
 		{
 			Name: "Minor Seventh Flat 5th", Abbrev: "m7b5", HalfSteps: []uint{3, 3, 4},
