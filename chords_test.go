@@ -66,3 +66,32 @@ func TestChordDefinition_WithRoot(t *testing.T) {
 		})
 	}
 }
+
+func TestChordDefinition_RootInt(t *testing.T) {
+	tests := []struct {
+		name string
+		root string
+		want int
+	}{
+		{
+			name: "notSet",
+			root: "",
+			want: -1,
+		},
+		{
+			name: "C",
+			root: "c",
+			want: 0,
+		},
+	}
+	for _, tt := range tests {
+		t.Run(tt.name, func(t *testing.T) {
+			cd := &ChordDefinition{
+				Root: tt.root,
+			}
+			if got := cd.RootInt(); got != tt.want {
+				t.Errorf("ChordDefinition.RootInt() = %v, want %v", got, tt.want)
+			}
+		})
+	}
+}

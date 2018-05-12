@@ -28,13 +28,13 @@ func (cd *ChordDefinition) WithRoot(root string) *ChordDefinition {
 	}
 }
 
-// RootInt returns the MIDI note number (on the octave 0).
+// RootInt returns the note number (0-11).
 // -1 is returned if the root isn't set.
 func (cd *ChordDefinition) RootInt() int {
 	if cd == nil || len(cd.Root) < 1 {
 		return -1
 	}
-	return KeyInt(cd.Root, 0)
+	return KeyInt(cd.Root, 0) % 12
 }
 
 func (cd *ChordDefinition) String() string {
