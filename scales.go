@@ -73,7 +73,7 @@ func ScaleNotes(tonic string, scale ScaleName) ([]int, []string) {
 	}
 	notes := []string{}
 	for _, k := range scaleKeys {
-		notes = append(notes, Notes[k])
+		notes = append(notes, Notes[k%12])
 	}
 	return scaleKeys, notes
 }

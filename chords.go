@@ -68,12 +68,19 @@ var (
 			Name: "Fifth", Abbrev: "5",
 			HalfSteps: []uint{7},
 		},
+		// 7th
 		{
 			Name: "Minor Seventh", Abbrev: "m7", HalfSteps: []uint{3, 4, 3},
 		},
-	}
-	// OtherChordDefs are less common chord definitions
-	OtherChordDefs = []*ChordDefinition{
+		{
+			Name: "Major Seventh", Abbrev: "Maj7", HalfSteps: []uint{4, 3, 4},
+		},
+		{
+			Name: "Seventh", Abbrev: "7", HalfSteps: []uint{4, 3, 3},
+		},
+		// }
+		// // OtherChordDefs are less common chord definitions
+		// OtherChordDefs = []*ChordDefinition{
 		{
 			Name: "Suspended 2nd", Abbrev: "sus2",
 			HalfSteps: []uint{2, 5},
@@ -85,10 +92,6 @@ var (
 		{
 			Name: "Major Flat 5th", Abbrev: "majb5",
 			HalfSteps: []uint{4, 2},
-		},
-		{
-			Name: "Augmented Suspended 4th", Abbrev: "augsus4",
-			HalfSteps: []uint{5, 3},
 		},
 		// 6th
 		{
@@ -111,9 +114,6 @@ var (
 			Name: "Minor Sixth 9th", Abbrev: "m6add9", HalfSteps: []uint{3, 4, 2, 5},
 		},
 		// 7th
-		{
-			Name: "Seventh", Abbrev: "7", HalfSteps: []uint{4, 3, 3},
-		},
 		{
 			Name: "Seventh Suspended 4th", Abbrev: "7sus4", HalfSteps: []uint{5, 2, 3},
 		},
@@ -146,9 +146,6 @@ var (
 		},
 		{
 			Name: "Seventh Sharp 11th", Abbrev: "7#11", HalfSteps: []uint{4, 3, 3, 8},
-		},
-		{
-			Name: "Major Seventh", Abbrev: "Maj7", HalfSteps: []uint{4, 3, 4},
 		},
 		{
 			Name: "Major Seventh Flat 5th", Abbrev: "Maj7b5", HalfSteps: []uint{4, 2, 5},
@@ -268,5 +265,10 @@ var (
 		{
 			Name: "Minor Major Thirteenth", Abbrev: "m-Maj13", HalfSteps: []uint{3, 4, 4, 3, 7},
 		},
+		//
+		// {
+		// 	Name: "Augmented Suspended 4th", Abbrev: "augsus4",
+		// 	HalfSteps: []uint{5, 3},
+		// },
 	}
 )
