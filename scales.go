@@ -62,10 +62,10 @@ var (
 	}
 )
 
-// ScaleNotes returns the notes in the scale. The return data contains the MIDI
-// note numbers (octave 0) and the English musical notes
+// ScaleNotes returns the notes in the scale. The return data contains the
+// note numbers (0-11) and the English musical notes
 func ScaleNotes(tonic string, scale ScaleName) ([]int, []string) {
-	k := KeyInt(tonic, 0)
+	k := KeyInt(tonic, 0) % 12
 	scaleKeys := []int{k}
 	for _, hs := range ScaleDefs[scale].HalfSteps {
 		k += hs
@@ -73,7 +73,7 @@ func ScaleNotes(tonic string, scale ScaleName) ([]int, []string) {
 	}
 	notes := []string{}
 	for _, k := range scaleKeys {
-		notes = append(notes, Notes[k%12])
+		notes = append(notes, Notes[k])
 	}
 	return scaleKeys, notes
 }

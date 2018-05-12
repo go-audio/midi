@@ -17,12 +17,12 @@ func TestScaleNotes(t *testing.T) {
 	}{
 		{
 			name: "C Major", tonic: "c", scale: midi.MajorScale,
-			wantKeys:  []int{24, 26, 28, 29, 31, 33, 35},
+			wantKeys:  []int{0, 2, 4, 5, 7, 9, 11},
 			wantNames: []string{`C`, `D`, `E`, `F`, `G`, `A`, `B`},
 		},
 		{
 			name: "C melodic Minor", tonic: "C", scale: midi.MelodicMinorScale,
-			wantKeys:  []int{24, 26, 27, 29, 31, 33, 35},
+			wantKeys:  []int{0, 2, 3, 5, 7, 9, 11},
 			wantNames: []string{`C`, `D`, `D#`, `F`, `G`, `A`, `B`},
 		},
 	}
