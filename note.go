@@ -63,6 +63,11 @@ func NoteToName(note int) string {
 	return key + strconv.Itoa(octave)
 }
 
+// NoteOctave returns the octave of the MIDI note
+func NoteOctave(note int) int {
+	return ((note / 12) | 0) - 2
+}
+
 // FreqToNote reports the associated midi node for a given frequency.
 func FreqToNote(freq float64) int {
 	pitch := 12.0*(math.Log(freq/(440/2.0))/math.Log(2.0)) + 57.0

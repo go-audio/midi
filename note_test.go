@@ -93,3 +93,26 @@ func TestFreqToNote(t *testing.T) {
 		})
 	}
 }
+
+func TestNoteOctave(t *testing.T) {
+	tests := []struct {
+		name string
+		note int
+		want int
+	}{
+		{name: "A", note: KeyInt("A", -2), want: -2},
+		{name: "B", note: KeyInt("B", -1), want: -1},
+		{name: "C", note: KeyInt("C", 0), want: 0},
+		{name: "D", note: KeyInt("D", 1), want: 1},
+		{name: "E", note: KeyInt("E", 2), want: 2},
+		{name: "F", note: KeyInt("F", 3), want: 3},
+		{name: "G", note: KeyInt("G", 4), want: 4},
+	}
+	for _, tt := range tests {
+		t.Run(tt.name, func(t *testing.T) {
+			if got := NoteOctave(tt.note); got != tt.want {
+				t.Errorf("NoteOctave() = %v, want %v", got, tt.want)
+			}
+		})
+	}
+}
