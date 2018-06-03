@@ -12,7 +12,8 @@ var (
 	Notes = []string{"C", "C#", "D", "D#", "E", "F", "F#", "G", "G#", "A", "A#", "B"}
 )
 
-var notesToInt = map[string]int{
+// NotesToInt is a map of note name to zero indexed position.
+var NotesToInt = map[string]int{
 	"C":  0,
 	"C#": 1,
 	"DB": 1,
@@ -40,7 +41,7 @@ type Note struct {
 
 // KeyInt converts an A-G note notation to a midi note number value.
 func KeyInt(n string, octave int) int {
-	key := notesToInt[strings.ToUpper(n)]
+	key := NotesToInt[strings.ToUpper(n)]
 	// octave starts at -2 but first note is at 0
 	return key + (octave+2)*12
 }
