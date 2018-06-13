@@ -3,7 +3,9 @@ package midi
 // ScaleDefinition defines a scale by giving it a name and the spacing between adjacent notes on the chromatic scale.
 type ScaleDefinition struct {
 	// Popular indicates that the scale is commonly used
-	Popular   bool
+	Popular bool
+	// Greek mode scale
+	Greek     bool
 	Name      ScaleName
 	HalfSteps []int
 }
@@ -46,8 +48,9 @@ const (
 	PhrygianScale        ScaleName = "Phrygian"
 	LydianScale          ScaleName = "Lydian"
 	MixolydianScale      ScaleName = "Mixolydian"
-	AeolianScale         ScaleName = "Aeolian"
-	LocrianScale         ScaleName = "Locrian"
+	NaturalMinor         ScaleName = "Natural Minor"
+	// LocrianScale represents the Locrian, or Hypodorian track https://en.wikipedia.org/wiki/Locrian_mode
+	LocrianScale ScaleName = "Locrian"
 )
 
 var (
@@ -60,7 +63,7 @@ var (
 		DiminishedScale:      {Name: DiminishedScale, HalfSteps: []int{2, 1, 2, 1, 2, 1, 2}},
 		MajorPentatonicScale: {Name: MajorPentatonicScale, HalfSteps: []int{2, 2, 3, 2}},
 		MinorPentatonicScale: {Name: MinorPentatonicScale, HalfSteps: []int{3, 2, 2, 3}, Popular: true},
-		DorianScale:          {Name: DorianScale, HalfSteps: []int{2, 1, 2, 2, 2, 1}, Popular: true},
+		DorianScale:          {Name: DorianScale, HalfSteps: []int{2, 1, 2, 2, 2, 1}, Greek: true},
 		//
 		JapInSenScale:        {Name: JapInSenScale, HalfSteps: []int{1, 4, 2, 3}},
 		MajorBebopScale:      {Name: MajorBebopScale, HalfSteps: []int{2, 2, 1, 2, 1, 1, 2}},
@@ -71,11 +74,11 @@ var (
 		NeapolitanScale:      {Name: NeapolitanScale, HalfSteps: []int{1, 2, 2, 2, 2, 2}},
 		NeapolitanMinorScale: {Name: NeapolitanMinorScale, HalfSteps: []int{1, 2, 2, 2, 1, 3}},
 		HungarianMinorScale:  {Name: HungarianMinorScale, HalfSteps: []int{2, 1, 3, 1, 1, 3}},
-		PhrygianScale:        {Name: PhrygianScale, HalfSteps: []int{1, 2, 2, 2, 1, 2}},
+		PhrygianScale:        {Name: PhrygianScale, HalfSteps: []int{1, 2, 2, 2, 1, 2}, Greek: true},
 		LydianScale:          {Name: LydianScale, HalfSteps: []int{2, 2, 2, 1, 2, 2}},
-		MixolydianScale:      {Name: MixolydianScale, HalfSteps: []int{2, 2, 1, 2, 2, 1}, Popular: true},
-		AeolianScale:         {Name: AeolianScale, HalfSteps: []int{2, 1, 2, 2, 1, 2}, Popular: true}, // AKA natural minor scale
-		LocrianScale:         {Name: LocrianScale, HalfSteps: []int{1, 2, 2, 1, 2, 2}},
+		MixolydianScale:      {Name: MixolydianScale, HalfSteps: []int{2, 2, 1, 2, 2, 1}},
+		NaturalMinor:         {Name: NaturalMinor, HalfSteps: []int{2, 1, 2, 2, 1, 2}, Popular: true}, // AKA aeolian
+		LocrianScale:         {Name: LocrianScale, HalfSteps: []int{1, 2, 2, 1, 2, 2}, Greek: true},
 	}
 )
 
