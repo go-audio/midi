@@ -1,3 +1,4 @@
 .vscode/*
 cmd/decoder/decoder
 cmd/gen/gen
+debug.test
