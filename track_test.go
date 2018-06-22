@@ -95,15 +95,21 @@ func TestTrack_Tempo(t *testing.T) {
 
 func TestTrack_Name(t *testing.T) {
 	tests := []struct {
-		name  string
-		track *Track
-		want  string
+		name      string
+		track     *Track
+		trackName string
+		want      string
 	}{
 		{name: "nil", track: nil, want: ""},
 		{name: "no events", track: &Track{Events: []*Event{}}, want: ""},
+		{name: "basic", track: &Track{Events: []*Event{TrackName("basic")}}, want: "basic"},
+		{name: "Using the setter", track: &Track{}, trackName: "Extra", want: "Extra"},
 	}
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
+			if len(tt.trackName) > 0 {
+				tt.track.SetName(tt.trackName)
+			}
 			if got := tt.track.Name(); got != tt.want {
 				t.Errorf("Track.Name() = %v, want %v", got, tt.want)
 			}

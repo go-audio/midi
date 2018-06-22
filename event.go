@@ -38,6 +38,14 @@ func EndOfTrack() *Event {
 	}
 }
 
+func TrackName(name string) *Event {
+	return &Event{
+		MsgType:      uint8(EventByteMap["Meta"]),
+		Cmd:          MetaByteMap["Sequence/Track name"],
+		SeqTrackName: name,
+	}
+}
+
 // AfterTouch returns a pointer to a new aftertouch event
 func Aftertouch(channel, key, vel int) *Event {
 	return &Event{
@@ -361,7 +369,12 @@ func (e *Event) Encode() []byte {
 			copyright := []byte(e.Copyright)
 			binary.Write(buff, binary.BigEndian, EncodeVarint(uint32(len(copyright))))
 			binary.Write(buff, binary.BigEndian, copyright)
-			// BPM / tempo event
+		// track name
+		case 0x03:
+			name := []byte(e.SeqTrackName)
+			binary.Write(buff, binary.BigEndian, EncodeVarint(uint32(len(name))))
+			binary.Write(buff, binary.BigEndian, name)
+		// BPM / tempo event
 		case 0x51:
 			binary.Write(buff, binary.BigEndian, EncodeVarint(3))
 			binary.Write(buff, binary.BigEndian, Uint24(e.MsPerQuartNote))
@@ -392,6 +405,11 @@ func (e *Event) Size() uint32 {
 			varintBytes := EncodeVarint(uint32(len(copyright)))
 			return uint32(len(copyright) + len(varintBytes))
 			// BPM (size + encoded in uint24)
+		// track name
+		case 0x03:
+			name := []byte(e.SeqTrackName)
+			varintBytes := EncodeVarint(uint32(len(name)))
+			return uint32(len(name) + len(varintBytes))
 		case 0x51: // tempo
 			return 4
 		case 0x2f: // end of track

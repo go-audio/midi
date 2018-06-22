@@ -12,6 +12,7 @@ import (
 type Track struct {
 	Size         uint32
 	Events       []*Event
+	_name        string
 	ticksPerBeat uint16
 }
 
@@ -55,15 +56,29 @@ func (t *Track) Tempo() int {
 	return 0
 }
 
+// SetName sets the name on the track so it can be encoded when the track is serialized.
+func (t *Track) SetName(name string) *Track {
+	if t == nil {
+		return t
+	}
+	t._name = name
+	return t
+}
+
+// Name returns the name of the track if provided
 func (t *Track) Name() string {
 	if t == nil {
 		return ""
+	}
+	if t._name != "" {
+		return t._name
 	}
 	nameEvType := MetaByteMap["Sequence/Track name"]
 	for _, ev := range t.Events {
 		if ev.Cmd == nameEvType {
 			// trim spaces and null bytes
-			return strings.TrimRight(strings.TrimSpace(ev.SeqTrackName), "\x00")
+			t._name = strings.TrimRight(strings.TrimSpace(ev.SeqTrackName), "\x00")
+			return t._name
 		}
 	}
 	return ""
@@ -77,6 +92,10 @@ func (t *Track) ChunkData(endTrack bool) ([]byte, error) {
 	// time signature
 	// TODO: don't have 4/4 36, 8 hardcoded
 	buff.Write([]byte{0x00, 0xFF, 0x58, 0x04, 0x04, 0x02, 0x24, 0x08})
+	// name event if name set
+	if name := t.Name(); len(name) > 0 {
+		t.Add(0, TrackName(name))
+	}
 
 	if endTrack {
 		if l := len(t.Events); l > 0 {
