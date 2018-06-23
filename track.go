@@ -94,7 +94,7 @@ func (t *Track) ChunkData(endTrack bool) ([]byte, error) {
 	buff.Write([]byte{0x00, 0xFF, 0x58, 0x04, 0x04, 0x02, 0x24, 0x08})
 	// name event if name set
 	if name := t.Name(); len(name) > 0 {
-		t.Add(0, TrackName(name))
+		t.Events = append([]*Event{TrackName(name)}, t.Events...)
 	}
 
 	if endTrack {
