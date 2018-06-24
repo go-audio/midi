@@ -39,9 +39,9 @@ func TestNewEncoder(t *testing.T) {
 		t.Fatalf("Expected track to be named: %s but got %s", trackName, tr.Name())
 	}
 	expEvts := []*Event{
+		{TimeDelta: 0x0, MsgType: 0xf, Cmd: 0x3, SeqTrackName: "TestTrack"},
 		{TimeDelta: 0x30, AbsTicks: 0x0, MsgType: 0x9, MsgChan: 0x1, Note: 0x3c, Velocity: 0x63},
 		{TimeDelta: 0x60, AbsTicks: 0x0, MsgType: 0x8, MsgChan: 0x1, Note: 0x3c, Velocity: 0x40},
-		{TimeDelta: 0x0, MsgType: 0xf, Cmd: 0x3, SeqTrackName: "TestTrack"},
 		{MsgType: 0xf, MsgChan: 0xf, Cmd: 0x2f},
 	}
 
