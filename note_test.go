@@ -116,3 +116,26 @@ func TestNoteOctave(t *testing.T) {
 		})
 	}
 }
+
+func TestNoteToName(t *testing.T) {
+	tests := []struct {
+		name string
+		note int
+		want string
+	}{
+		{name: "A", note: KeyInt("A", -2), want: "A-2"},
+		{name: "B", note: KeyInt("B", -1), want: "B-1"},
+		{name: "C", note: KeyInt("C", 0), want: "C0"},
+		{name: "D", note: KeyInt("D", 1), want: "D1"},
+		{name: "E", note: KeyInt("E", 2), want: "E2"},
+		{name: "F", note: KeyInt("F", 3), want: "F3"},
+		{name: "G", note: KeyInt("G", 4), want: "G4"},
+	}
+	for _, tt := range tests {
+		t.Run(tt.name, func(t *testing.T) {
+			if got := NoteToName(tt.note); got != tt.want {
+				t.Errorf("NoteToName(%d) = %v, want %v", tt.note, got, tt.want)
+			}
+		})
+	}
+}
