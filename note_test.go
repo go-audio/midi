@@ -5,7 +5,7 @@ import (
 	"testing"
 )
 
-var epsilon float64 = 0.00000001
+var epsilon = 0.00000001
 
 func floatEquals(a, b float64) bool {
 	if (a-b) < epsilon && (b-a) < epsilon {

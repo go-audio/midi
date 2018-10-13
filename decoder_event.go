@@ -43,7 +43,7 @@ func (p *Decoder) parseEvent() (nextChunkType, error) {
 
 	// unknown but found in the wild (seems to come with 1 data bytes)
 	case 0x2, 0x3, 0x4, 0x5, 0x6:
-		if _, err := p.ReadByte(); err != nil {
+		if _, err = p.ReadByte(); err != nil {
 			return eventChunk, err
 		}
 
@@ -460,7 +460,7 @@ func (p *Decoder) parseMetaMsg(e *Event) (nextChunkType, bool, error) {
 			}
 
 			// key
-			b, err := p.ReadByte()
+			b, err = p.ReadByte()
 			if err != nil {
 				return eventChunk, false, err
 			}
@@ -486,6 +486,9 @@ func (p *Decoder) parseMetaMsg(e *Event) (nextChunkType, bool, error) {
 			// Information not currently stored
 			tmp := make([]byte, l)
 			err = p.Read(tmp)
+			if err != nil {
+				return eventChunk, false, err
+			}
 		default:
 			if p.Debug {
 				fmt.Printf("Skipped meta cmd %#X\n", e.Cmd)

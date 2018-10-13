@@ -27,7 +27,9 @@ func TestNewEncoder(t *testing.T) {
 	if err := e.Write(); err != nil {
 		t.Fatal(err)
 	}
-	w.Seek(0, 0)
+	if _, err := w.Seek(0, 0); err != nil {
+		t.Fatal(err)
+	}
 	dec := NewDecoder(w)
 	if err := dec.Decode(); err != nil {
 		t.Fatal(err)
@@ -69,14 +71,17 @@ func TestNewEncoderWithForcedEnd(t *testing.T) {
 	tr.Add(1, NoteOff(1, KeyInt("C", 3)))
 	// force the end of track to be later
 	tr.Add(2, EndOfTrack())
-	if err := e.Write(); err != nil {
+	if err = e.Write(); err != nil {
 		t.Fatal(err)
 	}
 
-	w.Seek(0, 0)
+	if _, err = w.Seek(0, 0); err != nil {
+		t.Fatal(err)
+	}
+
 	midiData, err := ioutil.ReadAll(w)
 	if err != nil {
-		t.Log(err)
+		t.Fatal(err)
 	}
 	expected := []byte{
 		0x4d, 0x54, 0x68, 0x64, 0x00, 0x00, 0x00, 0x06, 00, 00, 00, 0x01, 00, 0x60, 0x4d, 0x54,

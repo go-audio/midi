@@ -105,7 +105,11 @@ func (t *Track) ChunkData(endTrack bool) ([]byte, error) {
 		}
 	}
 	for _, e := range t.Events {
-		if _, err := buff.Write(e.Encode()); err != nil {
+		data, err := e.Encode()
+		if err != nil {
+			return nil, err
+		}
+		if _, err := buff.Write(data); err != nil {
 			return nil, err
 		}
 	}

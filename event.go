@@ -46,7 +46,7 @@ func TrackName(name string) *Event {
 	}
 }
 
-// AfterTouch returns a pointer to a new aftertouch event
+// Aftertouch returns a pointer to a new aftertouch event
 func Aftertouch(channel, key, vel int) *Event {
 	return &Event{
 		MsgChan:  uint8(channel),
@@ -136,8 +136,7 @@ func Meta(channel int) *Event {
 	return nil
 }
 
-// Event
-// <event> = <MIDI event> | <sysex event> | <meta-event>
+// Event <event> = <MIDI event> | <sysex event> | <meta-event>
 // <MIDI event> is any MIDI channel message.
 // Running status is used:
 // status bytes of MIDI channel messages may be omitted if the preceding
@@ -270,16 +269,20 @@ func (e *Event) String() string {
 }
 
 // Encode converts an Event into a slice of bytes ready to be written to a file.
-func (e *Event) Encode() []byte {
+func (e *Event) Encode() ([]byte, error) {
 	buff := bytes.NewBuffer(nil)
-	buff.Write(EncodeVarint(e.TimeDelta))
+	if _, err := buff.Write(EncodeVarint(e.TimeDelta)); err != nil {
+		return buff.Bytes(), err
+	}
 
 	// msg type and chan are stored together
 	msgData := []byte{(e.MsgType << 4) | e.MsgChan}
 	if e.MsgType == EventByteMap["Meta"] {
 		msgData = []byte{0xFF}
 	}
-	buff.Write(msgData)
+	if _, err := buff.Write(msgData); err != nil {
+		return buff.Bytes(), err
+	}
 	switch e.MsgType {
 	// unknown but found in the wild (seems to come with 1 data bytes)
 	case 0x2, 0x3, 0x4, 0x5, 0x6:
@@ -287,9 +290,13 @@ func (e *Event) Encode() []byte {
 	// Note Off/On
 	case 0x8, 0x9, 0xA:
 		// note
-		binary.Write(buff, binary.BigEndian, e.Note)
+		if err := binary.Write(buff, binary.BigEndian, e.Note); err != nil {
+			return buff.Bytes(), err
+		}
 		// velocity
-		binary.Write(buff, binary.BigEndian, e.Velocity)
+		if err := binary.Write(buff, binary.BigEndian, e.Velocity); err != nil {
+			return buff.Bytes(), err
+		}
 		// Control Change / Channel Mode
 		// This message is sent when a controller value changes.
 		// Controllers include devices such as pedals and levers.
@@ -297,8 +304,12 @@ func (e *Event) Encode() []byte {
 		// The controller number is between 0-119.
 		// The new controller value is between 0-127.
 	case 0xB:
-		binary.Write(buff, binary.BigEndian, e.Controller)
-		binary.Write(buff, binary.BigEndian, e.NewValue)
+		if err := binary.Write(buff, binary.BigEndian, e.Controller); err != nil {
+			return buff.Bytes(), err
+		}
+		if err := binary.Write(buff, binary.BigEndian, e.NewValue); err != nil {
+			return buff.Bytes(), err
+		}
 		/*
 			channel mode messages
 			Documented, not technically exposed
@@ -333,8 +344,12 @@ func (e *Event) Encode() []byte {
 					This message sent when the patch number changes. Value is the new program number.
 		*/
 	case 0xC:
-		binary.Write(buff, binary.BigEndian, e.NewProgram)
-		binary.Write(buff, binary.BigEndian, e.NewValue)
+		if err := binary.Write(buff, binary.BigEndian, e.NewProgram); err != nil {
+			return buff.Bytes(), err
+		}
+		if err := binary.Write(buff, binary.BigEndian, e.NewValue); err != nil {
+			return buff.Bytes(), err
+		}
 		// Channel Pressure (Aftertouch)
 		// This message is most often sent by pressing down on the key after it "bottoms out".
 		// This message is different from polyphonic after-touch.
@@ -345,7 +360,9 @@ func (e *Event) Encode() []byte {
 		// For this reason, many cheaper units implement Channel Pressure instead of Aftertouch, as the former only requires
 		// one sensor for the entire keyboard's pressure.
 	case 0xD:
-		binary.Write(buff, binary.BigEndian, e.Pressure)
+		if err := binary.Write(buff, binary.BigEndian, e.Pressure); err != nil {
+			return buff.Bytes(), err
+		}
 		// Pitch Bend Change.
 		// This message is sent to indicate a change in the pitch bender (wheel or lever, typically).
 		// The pitch bender is measured by a fourteen bit value. Center (no pitch change) is 2000H.
@@ -356,36 +373,54 @@ func (e *Event) Encode() []byte {
 		// pitchbend
 		lsb := byte(e.AbsPitchBend & 0x7F)
 		msb := byte((e.AbsPitchBend & (0x7F << 7)) >> 7)
-		binary.Write(buff, binary.BigEndian, []byte{lsb, msb})
+		if err := binary.Write(buff, binary.BigEndian, []byte{lsb, msb}); err != nil {
+			return buff.Bytes(), err
+		}
 		//  Meta
 		// All meta-events start with FF followed by the command (xx), the length,
 		// or number of bytes that will contain data (nn), and the actual data (dd).
 		// meta_event = 0xFF + <meta_type> + <v_length> + <event_data_bytes>
 	case 0xF:
-		binary.Write(buff, binary.BigEndian, e.Cmd)
+		if err := binary.Write(buff, binary.BigEndian, e.Cmd); err != nil {
+			return buff.Bytes(), err
+		}
 		switch e.Cmd {
 		// Copyright Notice
 		case 0x02:
 			copyright := []byte(e.Copyright)
-			binary.Write(buff, binary.BigEndian, EncodeVarint(uint32(len(copyright))))
-			binary.Write(buff, binary.BigEndian, copyright)
+			if err := binary.Write(buff, binary.BigEndian, EncodeVarint(uint32(len(copyright)))); err != nil {
+				return buff.Bytes(), err
+			}
+			if err := binary.Write(buff, binary.BigEndian, copyright); err != nil {
+				return buff.Bytes(), err
+			}
 		// track name
 		case 0x03:
 			name := []byte(e.SeqTrackName)
-			binary.Write(buff, binary.BigEndian, EncodeVarint(uint32(len(name))))
-			binary.Write(buff, binary.BigEndian, name)
+			if err := binary.Write(buff, binary.BigEndian, EncodeVarint(uint32(len(name)))); err != nil {
+				return buff.Bytes(), err
+			}
+			if err := binary.Write(buff, binary.BigEndian, name); err != nil {
+				return buff.Bytes(), err
+			}
 		// BPM / tempo event
 		case 0x51:
-			binary.Write(buff, binary.BigEndian, EncodeVarint(3))
-			binary.Write(buff, binary.BigEndian, Uint24(e.MsPerQuartNote))
+			if err := binary.Write(buff, binary.BigEndian, EncodeVarint(3)); err != nil {
+				return buff.Bytes(), err
+			}
+			if err := binary.Write(buff, binary.BigEndian, Uint24(e.MsPerQuartNote)); err != nil {
+				return buff.Bytes(), err
+			}
 		case 0x2f: // end of track
-			buff.WriteByte(0x0)
+			if err := buff.WriteByte(0x0); err != nil {
+				return buff.Bytes(), err
+			}
 		}
 	default:
-		fmt.Printf("didn't encode %#v because didn't know how to\n", e)
+		return buff.Bytes(), fmt.Errorf("didn't encode %#v because didn't know how to", e)
 	}
 
-	return buff.Bytes()
+	return buff.Bytes(), nil
 }
 
 // Size represents the byte size to encode the event
