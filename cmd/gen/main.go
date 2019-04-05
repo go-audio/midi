@@ -4,7 +4,7 @@ import (
 	"log"
 	"os"
 
-	"github.com/mattetti/audio/midi"
+	"github.com/go-audio/midi"
 )
 
 func main() {
