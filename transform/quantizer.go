@@ -34,17 +34,31 @@ func (q Quantizer) Quantize(events midi.AbsEvents, ppq uint16) midi.AbsEvents {
 	stepSize := int(q.GridRes.StepSize(ppq))
 	halfStep := int(stepSize / 2)
 
-	for i, ev := range cc {
-		if remainder := ev.Start % int(stepSize); remainder != 0 {
-			if remainder >= halfStep {
-				cc[i].Start = (ev.Start / stepSize * stepSize) + stepSize
-			} else {
-				cc[i].Start = (ev.Start / stepSize) * stepSize
+	if q.Start {
+		for i, ev := range cc {
+			// snap start point
+			if remainder := ev.Start % int(stepSize); remainder != 0 {
+				// decide if the note should be moved sooner or later depending
+				// on how close it is from the nearby steps
+				if remainder >= halfStep {
+					cc[i].Start = (ev.Start / stepSize * stepSize) + stepSize
+				} else {
+					cc[i].Start = (ev.Start / stepSize) * stepSize
+				}
 			}
 		}
-		// find the closest snap point
-		// apply the quantization level to start if start
-		// adjust the length of the note if MoveEndOnStartQ
+	}
+	if q.End {
+		for i, ev := range cc {
+			// snap end point by adjusting the duration
+			if remainder := ev.Duration % int(stepSize); remainder != 0 {
+				if remainder >= halfStep {
+					cc[i].Duration = (ev.Duration / stepSize * stepSize) + stepSize
+				} else {
+					cc[i].Duration = (ev.Duration / stepSize) * stepSize
+				}
+			}
+		}
 	}
 
 	// sort the events, first ones first

@@ -54,6 +54,17 @@ func TestQuantizer_Quantize(t *testing.T) {
 			},
 			want: "../fixtures/unquantized_quantized-1_32.mid",
 		},
+		{
+			name:    "Quantize start and end of unquantized content at 1/32 100%",
+			fixture: "../fixtures/unquantized.mid",
+			fields: fields{
+				GridRes:           grid.One32,
+				QuantizationLevel: 1.0,
+				Start:             true,
+				End:               true,
+			},
+			want: "../fixtures/unquantized_quantized-1_32_start_end.mid",
+		},
 	}
 	for _, tt := range tests {
 		r, err := os.Open(filepath.Join(tt.fixture))
