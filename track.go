@@ -2,6 +2,7 @@ package midi
 
 import (
 	"bytes"
+	"sort"
 	"strings"
 )
 
@@ -110,4 +111,79 @@ func (t *Track) ChunkData(endTrack bool) ([]byte, error) {
 		}
 	}
 	return buff.Bytes(), nil
+}
+
+// AbsoluteEvents converts a midi track into a list of absolute events. The
+// events are sorted by start time, duration (shorter notes first) and finally
+// order of notes (lower notes first)
+func (t *Track) AbsoluteEvents() AbsEvents {
+	totalDuration := uint32(0) // in ticks
+
+	absEvs := map[int][]*AbsEv{}
+	curEvsStart := map[string]*Event{}
+
+	for _, ev := range t.Events {
+		totalDuration += ev.TimeDelta
+		pitch := int(ev.Note)
+		n := NoteToName(pitch)
+		// fmt.Printf("%s %s @ %.2f beats\n", n, EventMap[ev.MsgType], float64(totalDuration))
+
+		if _, ok := absEvs[pitch]; !ok {
+			absEvs[pitch] = []*AbsEv{}
+		}
+		if _, ok := curEvsStart[n]; !ok {
+			curEvsStart[n] = nil
+		}
+		switch ev.MsgType {
+		case EventByteMap["NoteOn"]:
+			if curEvsStart[n] != nil {
+				// end previous note (weird but sure)
+				start := uint32(curEvsStart[n].AbsTicks)
+				absEvs[pitch] = append(absEvs[pitch], &AbsEv{
+					MIDINote: pitch,
+					Start:    int(curEvsStart[n].AbsTicks),
+					Duration: int(totalDuration - start),
+					Vel:      int(ev.Velocity),
+				},
+				)
+			}
+			curEvsStart[n] = ev
+		case EventByteMap["NoteOff"]:
+			absEvs[pitch] = append(absEvs[pitch],
+				&AbsEv{
+					MIDINote: pitch,
+					Start:    int(curEvsStart[n].AbsTicks),
+					Duration: int(ev.AbsTicks) - int(curEvsStart[n].AbsTicks),
+					Vel:      int(curEvsStart[n].Velocity),
+				})
+			curEvsStart[n] = nil
+		}
+	}
+	events := []*AbsEv{}
+	for _, ev := range absEvs {
+		events = append(events, ev...)
+	}
+
+	// sort the events, first ones first
+	sort.Slice(events, func(i, j int) bool {
+		if events[i].Start < events[j].Start {
+			return true
+		}
+		if events[i].Start > events[j].Start {
+			return false
+		}
+		// if both items start at the same time, use the duration to sort
+		if events[i].Duration < events[j].Duration {
+			return true
+		}
+		if events[i].Duration > events[j].Duration {
+			return false
+		}
+		// if both items start at the same time, have the same duration, we sort by note
+		if events[i].MIDINote < events[j].MIDINote {
+			return true
+		}
+		return false
+	})
+	return events
 }
