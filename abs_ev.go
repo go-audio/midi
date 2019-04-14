@@ -23,6 +23,20 @@ func (ev *AbsEv) End() int {
 // AbsEvents is a collection of absolute events
 type AbsEvents []*AbsEv
 
+// Copy returns a deep copy of the absolute event points
+func (evs AbsEvents) Copy() AbsEvents {
+	cc := make(AbsEvents, len(evs))
+	for i, ev := range evs {
+		cc[i] = &AbsEv{
+			Start:    ev.Start,
+			Duration: ev.Duration,
+			Vel:      ev.Vel,
+			MIDINote: ev.MIDINote,
+		}
+	}
+	return cc
+}
+
 // ToMIDITrack adds a MIDI track to the encoder, make sure that the encoder uses
 // the same PPQ as the events.
 func (evs AbsEvents) ToMIDITrack(e *Encoder) *Track {
