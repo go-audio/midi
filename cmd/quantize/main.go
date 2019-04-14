@@ -2,7 +2,6 @@ package main
 
 import (
 	"github.com/go-audio/midi"
-	"github.com/go-audio/midi/grid"
 	"github.com/go-audio/midi/transform"
 	"log"
 	"os"
@@ -20,14 +19,7 @@ func main() {
 		log.Fatal(err)
 	}
 	events := dec.Tracks[0].AbsoluteEvents()
-	q := transform.Quantizer{
-		GridRes:           grid.One8,
-		QuantizationLevel: 1.0,
-		Start:             true,
-		End:               false,
-		MoveEndOnStartQ:   false,
-	}
-	quantizedEvents := q.Quantize(events, dec.TicksPerQuarterNote)
+	quantizedEvents := transform.One16thQuantizer.Quantize(events, dec.TicksPerQuarterNote)
 	f, err := os.Create("quantized.mid")
 	if err != nil {
 		log.Fatal(err)

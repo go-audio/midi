@@ -13,7 +13,7 @@ import (
 func TestQuantizer_Quantize(t *testing.T) {
 	type fields struct {
 		GridRes           grid.Res
-		QuantizationLevel float32
+		QuantizationLevel float64
 		Start             bool
 		End               bool
 		MoveEndOnStartQ   bool
@@ -46,6 +46,16 @@ func TestQuantizer_Quantize(t *testing.T) {
 		},
 		{
 			name:    "Quantize start of unquantized content at 1/32 100%",
+			fixture: "../fixtures/unquantized2bars.mid",
+			fields: fields{
+				GridRes:           grid.One32,
+				QuantizationLevel: 1.0,
+				Start:             true,
+			},
+			want: "../fixtures/unquantized2bars-quantized1_32.mid",
+		},
+		{
+			name:    "Quantize start of other unquantized content at 1/32 100%",
 			fixture: "../fixtures/unquantized.mid",
 			fields: fields{
 				GridRes:           grid.One32,
@@ -67,29 +77,29 @@ func TestQuantizer_Quantize(t *testing.T) {
 		},
 	}
 	for _, tt := range tests {
-		r, err := os.Open(filepath.Join(tt.fixture))
-		if err != nil {
-			t.Fatal(err)
-		}
-		dec := midi.NewDecoder(r)
-		if err = dec.Parse(); err != nil {
-			t.Fatal(err)
-		}
-		events := dec.Tracks[0].AbsoluteEvents()
-		r.Close()
-		// expected output
-		r, err = os.Open(filepath.Join(tt.want))
-		if err != nil {
-			t.Fatal(err)
-		}
-		dec = midi.NewDecoder(r)
-		if err = dec.Parse(); err != nil {
-			t.Fatal(err)
-		}
-		want := dec.Tracks[0].AbsoluteEvents()
-		r.Close()
-
 		t.Run(tt.name, func(t *testing.T) {
+			r, err := os.Open(filepath.Join(tt.fixture))
+			if err != nil {
+				t.Fatal(err)
+			}
+			dec := midi.NewDecoder(r)
+			if err = dec.Parse(); err != nil {
+				t.Fatal(err)
+			}
+			events := dec.Tracks[0].AbsoluteEvents()
+			r.Close()
+			// expected output
+			r, err = os.Open(filepath.Join(tt.want))
+			if err != nil {
+				t.Fatal(err)
+			}
+			dec = midi.NewDecoder(r)
+			if err = dec.Parse(); err != nil {
+				t.Fatal(err)
+			}
+			want := dec.Tracks[0].AbsoluteEvents()
+			r.Close()
+
 			q := Quantizer{
 				GridRes:           tt.fields.GridRes,
 				QuantizationLevel: tt.fields.QuantizationLevel,
