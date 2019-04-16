@@ -1,5 +1,9 @@
 package midi
 
+import (
+	"fmt"
+)
+
 // Position indicates where we are at in the project.
 type Position struct {
 	// Bar is the bar/measure of position (index 0)
@@ -8,8 +12,13 @@ type Position struct {
 	// of the time signature
 	Beat uint32
 	// Div is the division position within the beat
-	Div   uint32
+	Div uint32
+	// Ticks are the leftover ticks
 	Ticks uint32
+}
+
+func (p Position) String() string {
+	return fmt.Sprintf("Bar: %d, Beat: %d, Div: %d, Ticks: %d", p.Bar, p.Beat, p.Div, p.Ticks)
 }
 
 // ToTicks converts a position to an absolute tick number.
