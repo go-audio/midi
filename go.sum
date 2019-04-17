@@ -1,4 +1,2 @@
-github.com/go-audio/midi/grid v0.0.0-20190416075122-f7a8e13e837c h1:KH0XY4YKs6c8ISAN6eaN534zRC/8OLtdXmF1y/AJ6LM=
-github.com/go-audio/midi/grid v0.0.0-20190416075122-f7a8e13e837c/go.mod h1:VFF6oiBjXlZMylYjBcHfFAS5squvaKyfJ2LTuGXP3uw=
 github.com/mattetti/filebuffer v1.0.0 h1:ixTvQ0JjBTwWbdpDZ98lLrydo7KRi8xNRIi5RFszsbY=
 github.com/mattetti/filebuffer v1.0.0/go.mod h1:X6nyAIge2JGVmuJt2MFCqmHrb/5IHiphfHtot0s5cnI=
