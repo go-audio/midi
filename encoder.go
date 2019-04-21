@@ -2,9 +2,9 @@ package midi
 
 import (
 	"encoding/binary"
-	"errors"
 	"io"
-	"log"
+
+	"github.com/pkg/errors"
 )
 
 const (
@@ -54,6 +54,7 @@ type Encoder struct {
 	size int
 }
 
+// NewEncoder returns an encoder with the specified format
 func NewEncoder(w io.WriteSeeker, format uint16, ppqn uint16) *Encoder {
 	return &Encoder{w: w, Format: format, TicksPerQuarterNote: ppqn}
 }
@@ -70,7 +71,9 @@ func (e *Encoder) Write() error {
 	if e == nil {
 		return errors.New("Can't write a nil encoder")
 	}
-	e.writeHeaders()
+	if err := e.writeHeaders(); err != nil {
+		return err
+	}
 	for _, t := range e.Tracks {
 		if err := e.encodeTrack(t); err != nil {
 			return err
@@ -115,9 +118,7 @@ func (e *Encoder) encodeTrack(t *Track) error {
 	}
 	// chunk size
 	if err := binary.Write(e.w, binary.BigEndian, uint32(len(data))); err != nil {
-		log.Fatalf("106 - %v", err)
-
-		return err
+		return errors.Wrap(err, "106")
 	}
 	// chunk data
 	if _, err := e.w.Write(data); err != nil {

@@ -5,8 +5,7 @@ import (
 	"math"
 )
 
-// Time signature
-// FF 58 04 nn dd cc bb Time Signature
+// TimeSignature FF 58 04 nn dd cc bb Time Signature
 // The time signature is expressed as four numbers. nn and dd
 // represent the numerator and denominator of the time signature as it
 // would be notated. The denominator is a negative power of two: 2

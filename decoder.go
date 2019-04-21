@@ -20,10 +20,8 @@ const (
 	trackChunk
 )
 
-/*
-  Decoder
- Format documented there: http://www.music.mcgill.ca/~ich/classes/mumt306/midiformat.pdf
- <Header Chunk> = <chunk type><length><format><ntrks><division>
+/*Decoder Format documented there: http://www.music.mcgill.ca/~ich/classes/mumt306/midiformat.pdf
+  <Header Chunk> = <chunk type><length><format><ntrks><division>
 
 
 				Division, specifies the meaning of the delta-times.
@@ -94,6 +92,7 @@ type Decoder struct {
 	Tracks     []*Track
 }
 
+// CurrentTrack returns the current track
 func (d *Decoder) CurrentTrack() *Track {
 	if d == nil || len(d.Tracks) == 0 {
 		return nil
@@ -110,15 +109,16 @@ func (d *Decoder) Parse() error {
 func (d *Decoder) Decode() error {
 	var err error
 	var code [4]byte
+	var division uint16
 
-	if err := binary.Read(d.r, binary.BigEndian, &code); err != nil {
+	if err = binary.Read(d.r, binary.BigEndian, &code); err != nil {
 		return err
 	}
 	if code != headerChunkID {
 		return fmt.Errorf("%s - %s", ErrFmtNotSupported, code)
 	}
 	var headerSize uint32
-	if err := binary.Read(d.r, binary.BigEndian, &headerSize); err != nil {
+	if err = binary.Read(d.r, binary.BigEndian, &headerSize); err != nil {
 		return err
 	}
 
@@ -126,16 +126,15 @@ func (d *Decoder) Decode() error {
 		return fmt.Errorf("%s - expected header size to be 6, was %d", ErrFmtNotSupported, headerSize)
 	}
 
-	if err := binary.Read(d.r, binary.BigEndian, &d.Format); err != nil {
+	if err = binary.Read(d.r, binary.BigEndian, &d.Format); err != nil {
 		return err
 	}
 
-	if err := binary.Read(d.r, binary.BigEndian, &d.NumTracks); err != nil {
+	if err = binary.Read(d.r, binary.BigEndian, &d.NumTracks); err != nil {
 		return err
 	}
 
-	var division uint16
-	if err := binary.Read(d.r, binary.BigEndian, &division); err != nil {
+	if err = binary.Read(d.r, binary.BigEndian, &division); err != nil {
 		return err
 	}
 
@@ -254,6 +253,7 @@ func (d *Decoder) VarLenTxt() (string, uint32, error) {
 	return string(buf), n + uint32(m), err
 }
 
+// ReadByte returns one byte from the decoder
 func (d *Decoder) ReadByte() (byte, error) {
 	var b byte
 	err := binary.Read(d.r, binary.BigEndian, &b)
