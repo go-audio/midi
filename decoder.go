@@ -57,10 +57,9 @@ const (
 
 */
 type Decoder struct {
-	r            *bufio.Reader
-	currentTicks uint64
-	lastEvent    *Event
-	Debug        bool
+	r         *bufio.Reader
+	lastEvent *Event
+	Debug     bool
 
 	Ch chan *Track
 	/*

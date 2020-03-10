@@ -198,3 +198,106 @@ func TestTrack_AbsoluteEvents(t *testing.T) {
 		})
 	}
 }
+
+func TestTrack_AbsoluteEvents_MultiTrack(t *testing.T) {
+	tests := []struct {
+		name    string
+		fixture string
+		want    [][]*AbsEv
+	}{
+		{
+			name:    "example format 0",
+			fixture: "fixtures/example-format0.mid",
+			want: [][]*AbsEv{
+				0: {
+					// It's unclear whether different channels in format 0 should end up
+					// as different tracks or not.
+					0: &AbsEv{Start: 0, Duration: 384, Vel: 96, MIDINote: 48},
+					1: &AbsEv{Start: 0, Duration: 384, Vel: 96, MIDINote: 60},
+					2: &AbsEv{Start: 96, Duration: 288, Vel: 64, MIDINote: 67},
+					3: &AbsEv{Start: 192, Duration: 192, Vel: 32, MIDINote: 76},
+				},
+			},
+		},
+		{
+			name:    "example format 1",
+			fixture: "fixtures/example-format1.mid",
+			want: [][]*AbsEv{
+				0: {},
+				1: {
+					0: &AbsEv{Start: 192, Duration: 192, Vel: 32, MIDINote: 76},
+				},
+				2: {
+					0: &AbsEv{Start: 96, Duration: 288, Vel: 64, MIDINote: 67},
+				},
+				3: {
+					0: &AbsEv{Start: 0, Duration: 384, Vel: 96, MIDINote: 48},
+					1: &AbsEv{Start: 0, Duration: 384, Vel: 96, MIDINote: 60},
+				},
+			},
+		},
+		{
+			name:    "SATB multitrack",
+			fixture: "fixtures/satb-basic.mid",
+			want: [][]*AbsEv{
+				0: {
+					0: &AbsEv{Start: 0, Duration: 479, Vel: 80, MIDINote: 60},
+					1: &AbsEv{Start: 480, Duration: 479, Vel: 80, MIDINote: 62},
+					2: &AbsEv{Start: 960, Duration: 479, Vel: 80, MIDINote: 64},
+					3: &AbsEv{Start: 1440, Duration: 479, Vel: 80, MIDINote: 65},
+				},
+				1: {
+					0: &AbsEv{Start: 0, Duration: 479, Vel: 80, MIDINote: 69},
+					1: &AbsEv{Start: 480, Duration: 479, Vel: 80, MIDINote: 71},
+					2: &AbsEv{Start: 960, Duration: 479, Vel: 80, MIDINote: 72},
+					3: &AbsEv{Start: 1440, Duration: 479, Vel: 80, MIDINote: 74},
+				},
+				2: {
+					0: &AbsEv{Start: 0, Duration: 479, Vel: 80, MIDINote: 65},
+					1: &AbsEv{Start: 0, Duration: 479, Vel: 80, MIDINote: 71},
+					2: &AbsEv{Start: 480, Duration: 479, Vel: 80, MIDINote: 64},
+					3: &AbsEv{Start: 480, Duration: 479, Vel: 80, MIDINote: 67},
+					4: &AbsEv{Start: 960, Duration: 479, Vel: 80, MIDINote: 60},
+					5: &AbsEv{Start: 960, Duration: 479, Vel: 80, MIDINote: 65},
+					6: &AbsEv{Start: 1440, Duration: 479, Vel: 80, MIDINote: 60},
+					7: &AbsEv{Start: 1440, Duration: 479, Vel: 80, MIDINote: 64},
+				},
+				3: {
+					0: &AbsEv{Start: 0, Duration: 239, Vel: 80, MIDINote: 48},
+					1: &AbsEv{Start: 240, Duration: 239, Vel: 80, MIDINote: 50},
+					2: &AbsEv{Start: 480, Duration: 239, Vel: 80, MIDINote: 52},
+					3: &AbsEv{Start: 720, Duration: 239, Vel: 80, MIDINote: 53},
+					4: &AbsEv{Start: 960, Duration: 239, Vel: 80, MIDINote: 55},
+					5: &AbsEv{Start: 1200, Duration: 239, Vel: 80, MIDINote: 52},
+					6: &AbsEv{Start: 1440, Duration: 239, Vel: 80, MIDINote: 53},
+					7: &AbsEv{Start: 1680, Duration: 239, Vel: 80, MIDINote: 57},
+				},
+			},
+		},
+	}
+	for _, tt := range tests {
+		r, err := os.Open(tt.fixture)
+		if err != nil {
+			t.Fatal(err)
+		}
+		defer r.Close()
+		dec := NewDecoder(r)
+		if err := dec.Parse(); err != nil {
+			t.Fatal(err)
+		}
+		t.Run(tt.name, func(t *testing.T) {
+			for trackNo, want := range tt.want {
+				got := dec.Tracks[trackNo].AbsoluteEvents()
+				if len(got) != len(want) {
+					t.Fatalf("track #%d: expected %d events, but got %d", trackNo+1, len(want), len(got))
+				}
+				for i, ev := range got {
+					if !reflect.DeepEqual(ev, want[i]) {
+						t.Errorf("track #%d: expected event %d to be %+v but got %+v", trackNo+1, i, want[i], ev)
+					}
+				}
+			}
+
+		})
+	}
+}
