@@ -1,6 +1,7 @@
 package midi
 
 import (
+	"bufio"
 	"encoding/binary"
 	"errors"
 	"fmt"
@@ -56,8 +57,9 @@ const (
 
 */
 type Decoder struct {
-	r            io.Reader
+	r            *bufio.Reader
 	currentTicks uint64
+	lastEvent    *Event
 	Debug        bool
 
 	Ch chan *Track

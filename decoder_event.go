@@ -36,6 +36,27 @@ func (p *Decoder) parseEvent() (nextChunkType, error) {
 	e.MsgType = (statusByte & 0xF0) >> 4
 	e.MsgChan = statusByte & 0x0F
 
+	// For Voice and Mode messages only. When a Status byte is received and processed, the receiver will
+	// remain in that status until a different Status byte is received. Therefore, if the same Status byte would
+	// be repeated, it can optionally be omitted so that only the Data bytes need to be sent. Thus, with Running
+	// Status, a complete message can consist of only Data bytes.
+	if statusByte&0x80 == 0 {
+		if p.lastEvent != nil && isVoiceMsgType(p.lastEvent.MsgType) {
+			e.MsgType = p.lastEvent.MsgType
+			e.MsgChan = p.lastEvent.MsgChan
+			p.r.UnreadByte()
+		}
+	}
+
+	if e.MsgType == 0 {
+		if p.Debug {
+			fmt.Printf("did not parse data byte %#X\n", statusByte)
+		}
+		return eventChunk, nil
+	}
+
+	p.lastEvent = e
+
 	nextChunk := eventChunk
 
 	// Extract values based on message type

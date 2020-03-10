@@ -1,6 +1,7 @@
 package midi
 
 import (
+	"bufio"
 	"errors"
 	"io"
 )
@@ -16,11 +17,11 @@ var (
 )
 
 func NewDecoder(r io.Reader) *Decoder {
-	return &Decoder{r: r}
+	return &Decoder{r: bufio.NewReader(r)}
 }
 
 func NewParser(r io.Reader, ch chan *Track) *Decoder {
-	return &Decoder{r: r, Ch: ch}
+	return &Decoder{r: bufio.NewReader(r), Ch: ch}
 }
 
 // Uint24 converts a uint32 into a uint24 (big endian)
