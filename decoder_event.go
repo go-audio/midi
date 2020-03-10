@@ -23,7 +23,6 @@ func (p *Decoder) parseEvent() (nextChunkType, error) {
 	if err != nil {
 		return eventChunk, err
 	}
-	p.currentTicks += uint64(timeDelta)
 
 	// status byte give us the msg type and channel.
 	statusByte, err := p.ReadByte()
@@ -32,7 +31,7 @@ func (p *Decoder) parseEvent() (nextChunkType, error) {
 	}
 	readBytes++
 
-	e := &Event{TimeDelta: timeDelta, AbsTicks: p.currentTicks}
+	e := &Event{TimeDelta: timeDelta}
 	e.MsgType = (statusByte & 0xF0) >> 4
 	e.MsgChan = statusByte & 0x0F
 
@@ -213,6 +212,8 @@ func (p *Decoder) parseEvent() (nextChunkType, error) {
 
 	track := p.CurrentTrack()
 	if track != nil {
+		track.currentTicks += uint64(timeDelta)
+		e.AbsTicks = track.currentTicks
 		track.Events = append(track.Events, e)
 	}
 

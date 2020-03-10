@@ -15,6 +15,7 @@ type Track struct {
 	Events       []*Event
 	_name        string
 	ticksPerBeat uint16
+	currentTicks uint64
 }
 
 // Add schedules the passed event after x beats (relative to the previous event)
