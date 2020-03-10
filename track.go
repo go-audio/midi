@@ -136,6 +136,19 @@ func (t *Track) AbsoluteEvents() AbsEvents {
 		}
 		switch ev.MsgType {
 		case EventByteMap["NoteOn"]:
+			if ev.Velocity == 0 {
+				// Treat this as a NoteOff
+				absEvs[pitch] = append(absEvs[pitch],
+					&AbsEv{
+						MIDINote: pitch,
+						Start:    int(curEvsStart[n].AbsTicks),
+						Duration: int(ev.AbsTicks) - int(curEvsStart[n].AbsTicks),
+						Vel:      int(curEvsStart[n].Velocity),
+					})
+				curEvsStart[n] = nil
+				break
+			}
+
 			if curEvsStart[n] != nil {
 				// end previous note (weird but sure)
 				start := uint32(curEvsStart[n].AbsTicks)

@@ -160,6 +160,20 @@ func TestTrack_AbsoluteEvents(t *testing.T) {
 				22: &AbsEv{Start: 677, Duration: 47, Vel: 70, MIDINote: 52},
 			},
 		},
+		{
+			name:    "c major scale",
+			fixture: "fixtures/c-maj-scale.mid",
+			want: []*AbsEv{
+				0: &AbsEv{Start: 0, Duration: 479, Vel: 80, MIDINote: 48},
+				1: &AbsEv{Start: 480, Duration: 479, Vel: 80, MIDINote: 50},
+				2: &AbsEv{Start: 960, Duration: 479, Vel: 80, MIDINote: 52},
+				3: &AbsEv{Start: 1440, Duration: 479, Vel: 80, MIDINote: 53},
+				4: &AbsEv{Start: 1920, Duration: 479, Vel: 80, MIDINote: 55},
+				5: &AbsEv{Start: 2400, Duration: 479, Vel: 80, MIDINote: 57},
+				6: &AbsEv{Start: 2880, Duration: 479, Vel: 80, MIDINote: 59},
+				7: &AbsEv{Start: 3360, Duration: 479, Vel: 80, MIDINote: 60},
+			},
+		},
 	}
 	for _, tt := range tests {
 		r, err := os.Open(tt.fixture)
@@ -178,7 +192,7 @@ func TestTrack_AbsoluteEvents(t *testing.T) {
 			}
 			for i, ev := range got {
 				if !reflect.DeepEqual(ev, tt.want[i]) {
-					t.Errorf("Expected event %d to be %+v but got %+v", i, ev, tt.want[i])
+					t.Errorf("Expected event %d to be %+v but got %+v", i, tt.want[i], ev)
 				}
 			}
 		})

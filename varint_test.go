@@ -27,10 +27,10 @@ func TestEncodeDecodeVarint(t *testing.T) {
 
 	for _, tc := range testCases {
 		t.Run(fmt.Sprintf("%#v", tc.input), func(t *testing.T) {
-			if o, _ := DecodeVarint(tc.input); o != tc.output {
-				t.Fatalf("expected %d\ngot\n%d\n", tc.output, o)
+			if o, k := DecodeVarint(tc.input); o != tc.output || k != len(tc.input) {
+				t.Fatalf("expected %d len %d\ngot\n%d len %d\n", tc.output, len(tc.input), o, k)
 			}
-			if encoded := EncodeVarint(tc.output); bytes.Compare(encoded, tc.input) != 0 {
+			if encoded := EncodeVarint(tc.output); !bytes.Equal(encoded, tc.input) {
 				t.Fatalf("%d - expected %#v\ngot\n%#v\n", tc.output, tc.input, encoded)
 			}
 		})
@@ -45,7 +45,7 @@ func TestDecodeVarint(t *testing.T) {
 		wantN int
 	}{
 		{name: "empty decoder", buf: []byte{}, wantX: 0, wantN: 0},
-		{name: "fall through", buf: []byte{0x81}, wantX: 1, wantN: 0},
+		{name: "fall through", buf: []byte{0x81}, wantX: 1, wantN: 1},
 	}
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
