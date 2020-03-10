@@ -63,13 +63,13 @@ func NoteToFreq(note int) float64 {
 // NoteToName converts a midi note value into its English name
 func NoteToName(note int) string {
 	key := Notes[note%12]
-	octave := ((note / 12) | 0) - 2 // The MIDI scale starts at octave = -2
+	octave := note/12 - 2 // The MIDI scale starts at octave = -2
 	return key + strconv.Itoa(octave)
 }
 
 // NoteOctave returns the octave of the MIDI note
 func NoteOctave(note int) int {
-	return ((note / 12) | 0) - 2
+	return note/12 - 2
 }
 
 // FreqToNote reports the associated midi node for a given frequency.

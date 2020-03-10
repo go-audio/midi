@@ -115,7 +115,7 @@ func (d *Decoder) Decode() error {
 		return err
 	}
 	if code != headerChunkID {
-		return fmt.Errorf("%s - %s", ErrFmtNotSupported, code)
+		return fmt.Errorf("%s - %v", ErrFmtNotSupported, code)
 	}
 	var headerSize uint32
 	if err := binary.Read(d.r, binary.BigEndian, &headerSize); err != nil {
@@ -194,7 +194,7 @@ func (d *Decoder) parseTrack() (uint32, nextChunkType, error) {
 		return 0, trackChunk, err
 	}
 	if id != trackChunkID {
-		return 0, trackChunk, fmt.Errorf("%s - Expected track chunk ID %s, got %s", ErrUnexpectedData, trackChunkID, id)
+		return 0, trackChunk, fmt.Errorf("%s - expected track chunk ID %v, got %v", ErrUnexpectedData, trackChunkID, id)
 	}
 	d.Tracks = append(d.Tracks, &Track{Size: size})
 	return size, eventChunk, nil
@@ -207,7 +207,7 @@ func (d *Decoder) IDnSize() ([4]byte, uint32, error) {
 	if err := binary.Read(d.r, binary.BigEndian, &ID); err != nil {
 		return ID, blockSize, err
 	}
-	if err := binary.Read(d.r, binary.BigEndian, &blockSize); err != err {
+	if err := binary.Read(d.r, binary.BigEndian, &blockSize); err != nil {
 		return ID, blockSize, err
 	}
 	return ID, blockSize, nil

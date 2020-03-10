@@ -486,6 +486,9 @@ func (p *Decoder) parseMetaMsg(e *Event) (nextChunkType, bool, error) {
 			// Information not currently stored
 			tmp := make([]byte, l)
 			err = p.Read(tmp)
+			if err != nil {
+				return eventChunk, false, err
+			}
 		default:
 			if p.Debug {
 				fmt.Printf("Skipped meta cmd %#X\n", e.Cmd)

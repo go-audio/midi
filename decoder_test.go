@@ -21,7 +21,7 @@ func TestVarint(t *testing.T) {
 
 	for _, exp := range expecations {
 		conv := EncodeVarint(exp.dec)
-		if bytes.Compare(conv, exp.bytes) != 0 {
+		if !bytes.Equal(conv, exp.bytes) {
 			t.Fatalf("%d was converted to %#v didn't match %#v\n", exp.dec, conv, exp.bytes)
 		}
 	}
