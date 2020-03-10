@@ -185,7 +185,7 @@ func (p *Decoder) parseEvent() (nextChunkType, error) {
 
 	default:
 		if p.Debug {
-			fmt.Printf("skipped %#X - %s - %#X\n", statusByte, string(statusByte), e.MsgType)
+			fmt.Printf("skipped %#X - %#X\n", statusByte, e.MsgType)
 		}
 		return eventChunk, nil
 	}
