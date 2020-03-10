@@ -229,8 +229,8 @@ func (d *Decoder) VarLen() (val uint32, readBytes uint32, err error) {
 		n++
 	}
 
-	val, nUsed := DecodeVarint(buf)
-	return val, n + uint32(nUsed), nil
+	val, _ = DecodeVarint(buf)
+	return val, n, nil
 }
 
 // VarLenTxt Returns a variable length text string as well as the amount of
@@ -287,5 +287,17 @@ func (d *Decoder) Uint24() (uint32, error) {
 	output |= uint32(bytes[1]) << 8
 	output |= uint32(bytes[0]) << 16
 
+	return output, nil
+}
+
+// DecodeUint24 converts 3 bytes to an uint32
+func DecodeUint24(bytes []byte) (uint32, error) {
+	if len(bytes) != 3 {
+		return 0, fmt.Errorf("bytes length was %d", len(bytes))
+	}
+	var output uint32
+	output |= uint32(bytes[2]) << 0
+	output |= uint32(bytes[1]) << 8
+	output |= uint32(bytes[0]) << 16
 	return output, nil
 }
