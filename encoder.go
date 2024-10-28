@@ -49,8 +49,6 @@ type Encoder struct {
 
 	TimeFormat timeFormat
 	Tracks     []*Track
-
-	size int
 }
 
 // NewEncoder returns an encoder with the specified format
@@ -68,7 +66,7 @@ func (e *Encoder) NewTrack() *Track {
 // Write writes the binary representation to the writer
 func (e *Encoder) Write() error {
 	if e == nil {
-		return errors.New("Can't write a nil encoder")
+		return errors.New("can't write a nil encoder")
 	}
 	if err := e.writeHeaders(); err != nil {
 		return err

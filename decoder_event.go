@@ -333,7 +333,7 @@ func (p *Decoder) parseMetaMsg(e *Event) (nextChunkType, bool, error) {
 			*/
 		case 0x51:
 			if len(msgBytes) != 3 {
-				return eventChunk, false, fmt.Errorf("Set Tempo event error - %s (%d)", ErrUnexpectedData, len(msgBytes))
+				return eventChunk, false, fmt.Errorf("set Tempo event error - %s (%d)", ErrUnexpectedData, len(msgBytes))
 			}
 
 			e.MsPerQuartNote, err = DecodeUint24([]byte(msgBytes))
@@ -417,20 +417,11 @@ func (p *Decoder) parseMetaMsg(e *Event) (nextChunkType, bool, error) {
 		// A value of 0 for the scale specifies a major key and a value of 1 specifies a minor key.
 		case 0x59:
 			if len(msgBytes) != 2 {
-				return eventChunk, false, fmt.Errorf("Time Signature length not 2 as expected but %d", len(msgBytes))
+				return eventChunk, false, fmt.Errorf("time Signature length not 2 as expected but %d", len(msgBytes))
 			}
 
 			// key
-<<<<<<< HEAD
-			b, err = p.ReadByte()
-			if err != nil {
-				return eventChunk, false, err
-			}
-			e.Key = int32(b)
-
-=======
 			e.Key = int32(msgBytes[0])
->>>>>>> master
 			// scale
 			e.Scale = uint32(msgBytes[1])
 
@@ -441,15 +432,7 @@ func (p *Decoder) parseMetaMsg(e *Event) (nextChunkType, bool, error) {
 		// The individual manufacturers may document this information in their respective manuals.
 		case 0x7F:
 			// Information not currently stored
-<<<<<<< HEAD
-			tmp := make([]byte, l)
-			err = p.Read(tmp)
-			if err != nil {
-				return eventChunk, false, err
-			}
-=======
 			_ = msgBytes
->>>>>>> master
 		default:
 			if p.Debug {
 				fmt.Printf("Skipped meta cmd %#X\n", e.Cmd)

@@ -1,11 +1,12 @@
 package main
 
 import (
-	"github.com/go-audio/midi"
-	"github.com/go-audio/midi/transform"
 	"log"
 	"os"
 	"path/filepath"
+
+	"github.com/go-audio/midi"
+	"github.com/go-audio/midi/transform"
 )
 
 func main() {

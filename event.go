@@ -451,7 +451,7 @@ func (e *Event) Size() uint32 {
 			return 1
 		default:
 			// NOT currently support, blowing up on purpose
-			log.Fatal(errors.New("Can't encode this meta event, it is not supported yet"))
+			log.Fatal(errors.New("can't encode this meta event, it is not supported yet"))
 		}
 	}
 	return 0
