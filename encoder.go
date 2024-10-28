@@ -4,7 +4,6 @@ import (
 	"encoding/binary"
 	"errors"
 	"io"
-	"log"
 )
 
 const (
@@ -50,10 +49,9 @@ type Encoder struct {
 
 	TimeFormat timeFormat
 	Tracks     []*Track
-
-	size int
 }
 
+// NewEncoder returns an encoder with the specified format
 func NewEncoder(w io.WriteSeeker, format uint16, ppqn uint16) *Encoder {
 	return &Encoder{w: w, Format: format, TicksPerQuarterNote: ppqn}
 }
@@ -68,9 +66,11 @@ func (e *Encoder) NewTrack() *Track {
 // Write writes the binary representation to the writer
 func (e *Encoder) Write() error {
 	if e == nil {
-		return errors.New("Can't write a nil encoder")
+		return errors.New("can't write a nil encoder")
 	}
-	e.writeHeaders()
+	if err := e.writeHeaders(); err != nil {
+		return err
+	}
 	for _, t := range e.Tracks {
 		if err := e.encodeTrack(t); err != nil {
 			return err
@@ -115,8 +115,6 @@ func (e *Encoder) encodeTrack(t *Track) error {
 	}
 	// chunk size
 	if err := binary.Write(e.w, binary.BigEndian, uint32(len(data))); err != nil {
-		log.Fatalf("106 - %v", err)
-
 		return err
 	}
 	// chunk data

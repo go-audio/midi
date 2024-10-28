@@ -63,7 +63,7 @@ func (p *Decoder) parseEvent() (nextChunkType, error) {
 
 	// unknown but found in the wild (seems to come with 1 data bytes)
 	case 0x2, 0x3, 0x4, 0x5, 0x6:
-		if _, err := p.ReadByte(); err != nil {
+		if _, err = p.ReadByte(); err != nil {
 			return eventChunk, err
 		}
 
@@ -333,7 +333,7 @@ func (p *Decoder) parseMetaMsg(e *Event) (nextChunkType, bool, error) {
 			*/
 		case 0x51:
 			if len(msgBytes) != 3 {
-				return eventChunk, false, fmt.Errorf("Set Tempo event error - %s (%d)", ErrUnexpectedData, len(msgBytes))
+				return eventChunk, false, fmt.Errorf("set Tempo event error - %s (%d)", ErrUnexpectedData, len(msgBytes))
 			}
 
 			e.MsPerQuartNote, err = DecodeUint24([]byte(msgBytes))
@@ -417,7 +417,7 @@ func (p *Decoder) parseMetaMsg(e *Event) (nextChunkType, bool, error) {
 		// A value of 0 for the scale specifies a major key and a value of 1 specifies a minor key.
 		case 0x59:
 			if len(msgBytes) != 2 {
-				return eventChunk, false, fmt.Errorf("Time Signature length not 2 as expected but %d", len(msgBytes))
+				return eventChunk, false, fmt.Errorf("time Signature length not 2 as expected but %d", len(msgBytes))
 			}
 
 			// key
