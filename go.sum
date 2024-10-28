@@ -1,0 +1,4 @@
+github.com/mattetti/audio v0.0.0-20240411020228-c5379f9b5b61 h1:db1I7R9KTRARpVXhyd4+cGecxutdJbpx11Gun98GP7U=
+github.com/mattetti/audio v0.0.0-20240411020228-c5379f9b5b61/go.mod h1:LlQmBGkOuV/SKzEDXBPKauvN2UqCgzXO2XjecTGj40s=
+github.com/mattetti/filebuffer v1.0.1 h1:gG7pyfnSIZCxdoKq+cPa8T0hhYtD9NxCdI4D7PTjRLM=
+github.com/mattetti/filebuffer v1.0.1/go.mod h1:YdMURNDOttIiruleeVr6f56OrMc+MydEnTcXwtkxNVs=

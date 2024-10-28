@@ -2,9 +2,8 @@ package midi
 
 import (
 	"encoding/binary"
+	"errors"
 	"io"
-
-	"github.com/pkg/errors"
 )
 
 const (
@@ -118,7 +117,7 @@ func (e *Encoder) encodeTrack(t *Track) error {
 	}
 	// chunk size
 	if err := binary.Write(e.w, binary.BigEndian, uint32(len(data))); err != nil {
-		return errors.Wrap(err, "106")
+		return err
 	}
 	// chunk data
 	if _, err := e.w.Write(data); err != nil {
