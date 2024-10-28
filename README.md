@@ -5,7 +5,7 @@ The MIDI package is a high level MIDI library to consume and generate MIDI files
 [![GoDoc](https://godoc.org/github.com/go-audio/midi?status.svg)](https://godoc.org/github.com/go-audio/midi)
 [![Go Report Card](https://goreportcard.com/badge/github.com/go-audio/midi)](https://goreportcard.com/report/github.com/go-audio/midi)
 [![Coverage Status](https://codecov.io/gh/go-audio/midi/graph/badge.svg)](https://codecov.io/gh/go-audio/midi)
-[![Build Status](https://travis-ci.org/go-audio/midi.svg)](https://travis-ci.org/go-audio/midi)
+![Workflow Status](https://github.com/go-audio/midi/actions/workflows/go.yml/badge.svg)
 
 ## Alternative
 
