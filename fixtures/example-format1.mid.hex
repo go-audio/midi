@@ -1,0 +1,49 @@
+// Header chunk
+4D 54 68 64     // MThd
+00 00 00 06     // chunk length
+00 01           // format 0
+00 04           // four tracks
+00 60           // 96 per quarter-note
+
+// Then the track chunk for the time signature/tempo track.
+// Its header, followed by the events: 
+4D 54 72 6B     // MTrk
+00 00 00 14     // chunk length (20) 
+
+// Delta   Event
+   00      FF 58 04 04 02 18 08 // time signature
+   00      FF 51 03 07 A1 20    // tempo
+   83 00   FF 2F 00             // end of track
+
+// Then, the track chunk for the first music track.
+// The MIDI convention for note on/off running
+// status is used in this example:
+4D 54 72 6B     // MTrk
+00 00 00 10     // chunk length (16)
+
+// Delta   Event
+   00      C0 05
+   81 40   90 4C 20
+   81 40   4C 00                // Running status: note on, vel = 0
+   00      FF 2F 00             // end of track
+
+// Then, the track chunk for the second music track: 
+4D 54 72 6B     // MTrk
+00 00 00 0F     // chunk length (15)
+
+// Delta   Event
+   00      C1 2E
+   60      91 43 40
+   82 20   43 00                // running status
+   00      FF 2F 00             // end of track
+
+// Then, the track chunk for the third music track: 
+4D 54 72 6B     // MTrk
+00 00 00 15     // chunk length (21)
+// Delta   Event
+   00      C2 46
+   00      92 30 60
+   00      3C 60                // running status
+   83 00   30 00                // two-byte delta-time, running status
+   00      3C 00                // running status
+   00      FF 2F 00             // end of track

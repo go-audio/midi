@@ -1,6 +1,7 @@
 package midi
 
 import (
+	"bufio"
 	"encoding/binary"
 	"errors"
 	"fmt"
@@ -54,9 +55,9 @@ const (
 
 */
 type Decoder struct {
-	r            io.Reader
-	currentTicks uint64
-	Debug        bool
+	r         *bufio.Reader
+	lastEvent *Event
+	Debug     bool
 
 	Ch chan *Track
 	/*
@@ -115,7 +116,7 @@ func (d *Decoder) Decode() error {
 		return err
 	}
 	if code != headerChunkID {
-		return fmt.Errorf("%s - %s", ErrFmtNotSupported, code)
+		return fmt.Errorf("%s - %v", ErrFmtNotSupported, code)
 	}
 	var headerSize uint32
 	if err = binary.Read(d.r, binary.BigEndian, &headerSize); err != nil {
@@ -193,7 +194,7 @@ func (d *Decoder) parseTrack() (uint32, nextChunkType, error) {
 		return 0, trackChunk, err
 	}
 	if id != trackChunkID {
-		return 0, trackChunk, fmt.Errorf("%s - Expected track chunk ID %s, got %s", ErrUnexpectedData, trackChunkID, id)
+		return 0, trackChunk, fmt.Errorf("%s - expected track chunk ID %v, got %v", ErrUnexpectedData, trackChunkID, id)
 	}
 	d.Tracks = append(d.Tracks, &Track{Size: size})
 	return size, eventChunk, nil
@@ -206,7 +207,7 @@ func (d *Decoder) IDnSize() ([4]byte, uint32, error) {
 	if err := binary.Read(d.r, binary.BigEndian, &ID); err != nil {
 		return ID, blockSize, err
 	}
-	if err := binary.Read(d.r, binary.BigEndian, &blockSize); err != err {
+	if err := binary.Read(d.r, binary.BigEndian, &blockSize); err != nil {
 		return ID, blockSize, err
 	}
 	return ID, blockSize, nil
@@ -228,8 +229,8 @@ func (d *Decoder) VarLen() (val uint32, readBytes uint32, err error) {
 		n++
 	}
 
-	val, nUsed := DecodeVarint(buf)
-	return val, n + uint32(nUsed), nil
+	val, _ = DecodeVarint(buf)
+	return val, n, nil
 }
 
 // VarLenTxt Returns a variable length text string as well as the amount of
@@ -287,5 +288,17 @@ func (d *Decoder) Uint24() (uint32, error) {
 	output |= uint32(bytes[1]) << 8
 	output |= uint32(bytes[0]) << 16
 
+	return output, nil
+}
+
+// DecodeUint24 converts 3 bytes to an uint32
+func DecodeUint24(bytes []byte) (uint32, error) {
+	if len(bytes) != 3 {
+		return 0, fmt.Errorf("bytes length was %d", len(bytes))
+	}
+	var output uint32
+	output |= uint32(bytes[2]) << 0
+	output |= uint32(bytes[1]) << 8
+	output |= uint32(bytes[0]) << 16
 	return output, nil
 }

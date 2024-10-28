@@ -21,7 +21,7 @@ func TestVarint(t *testing.T) {
 
 	for _, exp := range expecations {
 		conv := EncodeVarint(exp.dec)
-		if bytes.Compare(conv, exp.bytes) != 0 {
+		if !bytes.Equal(conv, exp.bytes) {
 			t.Fatalf("%d was converted to %#v didn't match %#v\n", exp.dec, conv, exp.bytes)
 		}
 	}
@@ -48,6 +48,7 @@ func TestParsingFile(t *testing.T) {
 		{"fixtures/elise1track.mid", 0, 1, 480, MetricalTF, []string{"F"}, []int{69}},
 		{"fixtures/bossa.mid", 0, 1, 96, MetricalTF, []string{"bossa 1"}, []int{0}},
 		{"fixtures/closedHat.mid", 0, 1, 96, MetricalTF, []string{"01 4th Hat Closed Side"}, []int{0}},
+		{"fixtures/satb-basic.mid", 1, 4, 480, MetricalTF, []string{"", "", "", ""}, []int{120, 0, 0, 0}},
 	}
 
 	for _, exp := range expectations {

@@ -456,3 +456,11 @@ func (e *Event) Size() uint32 {
 	}
 	return 0
 }
+
+// isVoiceMsgType whether b corresponds to a voice message tyoe
+func isVoiceMsgType(b byte) bool {
+	// Channel Voice Messages are used to send musical performance information. The messages in
+	// this category are the Note On, Note Off, Polyphonic Key Pressure, Channel Pressure, Pitch
+	// Bend Change, Program Change, and the Control Change messages.
+	return 0x8 <= b && b <= 0xE
+}

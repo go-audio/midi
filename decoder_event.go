@@ -23,7 +23,6 @@ func (p *Decoder) parseEvent() (nextChunkType, error) {
 	if err != nil {
 		return eventChunk, err
 	}
-	p.currentTicks += uint64(timeDelta)
 
 	// status byte give us the msg type and channel.
 	statusByte, err := p.ReadByte()
@@ -32,9 +31,30 @@ func (p *Decoder) parseEvent() (nextChunkType, error) {
 	}
 	readBytes++
 
-	e := &Event{TimeDelta: timeDelta, AbsTicks: p.currentTicks}
+	e := &Event{TimeDelta: timeDelta}
 	e.MsgType = (statusByte & 0xF0) >> 4
 	e.MsgChan = statusByte & 0x0F
+
+	// For Voice and Mode messages only. When a Status byte is received and processed, the receiver will
+	// remain in that status until a different Status byte is received. Therefore, if the same Status byte would
+	// be repeated, it can optionally be omitted so that only the Data bytes need to be sent. Thus, with Running
+	// Status, a complete message can consist of only Data bytes.
+	if statusByte&0x80 == 0 {
+		if p.lastEvent != nil && isVoiceMsgType(p.lastEvent.MsgType) {
+			e.MsgType = p.lastEvent.MsgType
+			e.MsgChan = p.lastEvent.MsgChan
+			p.r.UnreadByte()
+		}
+	}
+
+	if e.MsgType == 0 {
+		if p.Debug {
+			fmt.Printf("did not parse data byte %#X\n", statusByte)
+		}
+		return eventChunk, nil
+	}
+
+	p.lastEvent = e
 
 	nextChunk := eventChunk
 
@@ -185,13 +205,15 @@ func (p *Decoder) parseEvent() (nextChunkType, error) {
 
 	default:
 		if p.Debug {
-			fmt.Printf("skipped %#X - %s - %#X\n", statusByte, string(statusByte), e.MsgType)
+			fmt.Printf("skipped %#X - %#X\n", statusByte, e.MsgType)
 		}
 		return eventChunk, nil
 	}
 
 	track := p.CurrentTrack()
 	if track != nil {
+		track.currentTicks += uint64(timeDelta)
+		e.AbsTicks = track.currentTicks
 		track.Events = append(track.Events, e)
 	}
 
@@ -211,8 +233,9 @@ func (p *Decoder) parseMetaMsg(e *Event) (nextChunkType, bool, error) {
 		}
 		e.Cmd = uint8(b)
 
-		switch e.Cmd {
+		msgBytes, _, err := p.VarLenTxt()
 
+		switch e.Cmd {
 		// Sequence Number
 		// This optional event, which must occur at the beginning of a track,
 		// before any nonzero delta-times, and before any transmittable MIDI
@@ -226,16 +249,7 @@ func (p *Decoder) parseMetaMsg(e *Event) (nextChunkType, bool, error) {
 		// must be done as a group of format 1 files, each with a different
 		// sequence number.
 		case 0x0:
-			if b, err = p.ReadByte(); err != nil {
-				return eventChunk, false, err
-			}
-			if uint8(b) != 0 {
-				var seqB []byte
-				if err = p.Read(seqB); err != nil {
-					return eventChunk, false, err
-				}
-				e.SeqNum = binary.BigEndian.Uint16(seqB)
-			}
+			e.SeqNum = binary.BigEndian.Uint16([]byte(msgBytes))
 
 		// Text Event
 		// Any amount of text describing anything. It is a good idea to put a
@@ -250,23 +264,17 @@ func (p *Decoder) parseMetaMsg(e *Event) (nextChunkType, bool, error) {
 		// supports an extended character set. Programs on a computer which does
 		// not support non-ASCII characters should ignore those characters.
 		case 0x01:
-			if e.Text, _, err = p.VarLenTxt(); err != nil {
-				return eventChunk, false, err
-			}
+			e.Text = msgBytes
 
 		// Copyright Notice
 		case 0x02:
-			if e.Copyright, _, err = p.VarLenTxt(); err != nil {
-				return eventChunk, false, err
-			}
+			e.Copyright = msgBytes
 
 		// Sequence/Track Name
 		// If in a format 0 track, or the first track in a format 1 file, the
 		// name of the sequence. Otherwise, the name of the track.
 		case 0x03:
-			if e.SeqTrackName, _, err = p.VarLenTxt(); err != nil {
-				return eventChunk, false, err
-			}
+			e.SeqTrackName = msgBytes
 
 		// Instrument name
 		// A description of the type of instrumentation to be used in that
@@ -275,29 +283,21 @@ func (p *Decoder) parseMetaMsg(e *Event) (nextChunkType, bool, error) {
 		// specified as text in the event itself.
 		//
 		case 0x04:
-			if e.InstrumentName, _, err = p.VarLenTxt(); err != nil {
-				return eventChunk, false, err
-			}
+			e.InstrumentName = msgBytes
 
 		// Lyric
 		case 0x05:
-			if e.Lyric, _, err = p.VarLenTxt(); err != nil {
-				return eventChunk, false, err
-			}
+			e.Lyric = msgBytes
 
 		// Marker
 		// Normally in a format 0 track, or the first track in a format 1 file.
 		// The name of that point in the sequence, such as a rehersal letter
 		case 0x06:
-			if e.Marker, _, err = p.VarLenTxt(); err != nil {
-				return eventChunk, false, err
-			}
+			e.Marker = msgBytes
 
 		// Cue point
 		case 0x07:
-			if e.CuePoint, _, err = p.VarLenTxt(); err != nil {
-				return eventChunk, false, err
-			}
+			e.CuePoint = msgBytes
 
 		// MIDI Channel Prefix
 		// The MIDI channel (0-15) containted in this event may be used to
@@ -309,24 +309,19 @@ func (p *Decoder) parseMetaMsg(e *Event) (nextChunkType, bool, error) {
 		// associated with a track. This capability is also present in Yamaha's
 		// ESEQ file format.
 		case 0x20:
-			var b byte
-			if b, err = p.ReadByte(); err != nil {
-				return eventChunk, false, err
-			}
-			if uint8(b) != 1 {
+			if len(msgBytes) != 1 {
 				return eventChunk, false, fmt.Errorf("MIDI Channel Prefix event error - %s", ErrUnexpectedData)
 			}
-
-			if e.Channel, err = p.ReadByte(); err != nil {
-				return eventChunk, false, err
-			}
+			e.Channel = byte(msgBytes[0])
 
 		// End of track
 		// This event is not optional. It is included so that an exact ending
 		// point may be specified for the track, so that an exact length, which
 		// is necessary for tracks which are looped or concatenated.
 		case 0x2F:
-			_, err = p.ReadByte()
+			// unsure what the msgBytes could contain
+			_ = msgBytes
+
 			return trackChunk, true, err
 
 			/*
@@ -337,15 +332,12 @@ func (p *Decoder) parseMetaMsg(e *Event) (nextChunkType, bool, error) {
 			      The following formula's can be used to translate the tempo from microseconds per quarter-note to beats per minute and back.
 			*/
 		case 0x51:
-			var l uint32
-			if l, _, err = p.VarLen(); err != nil {
-				return eventChunk, false, err
-			}
-			if l != 3 {
-				return eventChunk, false, fmt.Errorf("Set Tempo event error - %s", ErrUnexpectedData)
+			if len(msgBytes) != 3 {
+				return eventChunk, false, fmt.Errorf("Set Tempo event error - %s (%d)", ErrUnexpectedData, len(msgBytes))
 			}
 
-			if e.MsPerQuartNote, err = p.Uint24(); err != nil {
+			e.MsPerQuartNote, err = DecodeUint24([]byte(msgBytes))
+			if err != nil {
 				return eventChunk, false, err
 			}
 
@@ -363,30 +355,17 @@ func (p *Decoder) parseMetaMsg(e *Event) (nextChunkType, bool, error) {
 			   A 25 fps frame rate means that a maximum value of 24 may be set for the frame byte.
 			*/
 		case 0x54:
-			var l uint32
-			if l, _, err = p.VarLen(); err != nil {
-				return eventChunk, false, err
+			if len(msgBytes) != 5 {
+				return eventChunk, false, fmt.Errorf("error parsing SMPTE Offset - %s (%d)", ErrUnexpectedData, len(msgBytes))
 			}
-			if l != 5 {
-				return eventChunk, false, fmt.Errorf("error parsing SMPTE Offset - %s (%d)", ErrUnexpectedData, l)
+
+			e.SmpteOffset = &SmpteOffset{
+				Hour:  msgBytes[0],
+				Min:   msgBytes[1],
+				Sec:   msgBytes[2],
+				Fr:    msgBytes[3],
+				SubFr: msgBytes[4],
 			}
-			so := &SmpteOffset{}
-			if err = p.Read(&so.Hour); err != nil {
-				return eventChunk, false, err
-			}
-			if err = p.Read(&so.Min); err != nil {
-				return eventChunk, false, err
-			}
-			if err = p.Read(&so.Sec); err != nil {
-				return eventChunk, false, err
-			}
-			if err = p.Read(&so.Fr); err != nil {
-				return eventChunk, false, err
-			}
-			if err = p.Read(&so.SubFr); err != nil {
-				return eventChunk, false, err
-			}
-			e.SmpteOffset = so
 
 			// Time signature
 			// FF 58 04 nn dd cc bb Time Signature
@@ -418,60 +397,42 @@ func (p *Decoder) parseMetaMsg(e *Event) (nextChunkType, bool, error) {
 			// (or all track chunks in a Type 2 file) before any non-zero delta time events.
 			// If one is not specified 4/4, 24, 8 should be assumed.
 		case 0x58:
-			var l uint32
-			if l, _, err = p.VarLen(); err != nil {
-				return eventChunk, false, err
+			if len(msgBytes) != 4 {
+				return eventChunk, false, fmt.Errorf("error parsing TimeSignature - %s (%d)", ErrUnexpectedData, len(msgBytes))
 			}
 
-			if l != 4 {
-				return eventChunk, false, fmt.Errorf("error parsing TimeSignature - %s (%d)", ErrUnexpectedData, l)
+			e.TimeSignature = &TimeSignature{
+				Numerator: msgBytes[0],
+				//The denominator is a neqative power of two: 2
+				//represents a quarter-note, 3 represents an eighth-note, etc
+				Denominator:   msgBytes[1],
+				ClocksPerTick: msgBytes[2],
+				// The number of notated 32nd-notes in a MIDI quarter-note (24 MIDI clocks).
+				ThirtySecondNotesPerQuarter: msgBytes[3],
 			}
-
-			var num, denom, clocksPerClick, thirtySecondNotesPerQuarter byte
-			if num, err = p.ReadByte(); err != nil {
-				return eventChunk, false, err
-			}
-			//The denominator is a neqative power of two: 2
-			//represents a quarter-note, 3 represents an eighth-note, etc
-			if denom, err = p.ReadByte(); err != nil {
-				return eventChunk, false, err
-			}
-			if clocksPerClick, err = p.ReadByte(); err != nil {
-				return eventChunk, false, err
-			}
-			// The number of notated 32nd-notes in a MIDI quarter-note (24 MIDI clocks).
-			if thirtySecondNotesPerQuarter, err = p.ReadByte(); err != nil {
-				return eventChunk, false, err
-			}
-
-			e.TimeSignature = &TimeSignature{uint8(num), uint8(denom), uint8(clocksPerClick), uint8(thirtySecondNotesPerQuarter)}
 
 		// Key signature
 		// This meta event is used to specify the key (number of sharps or flats) and scale (major or minor) of a sequence.
 		// A positive value for the key specifies the number of sharps and a negative value specifies the number of flats.
 		// A value of 0 for the scale specifies a major key and a value of 1 specifies a minor key.
 		case 0x59:
-			var l uint32
-			if l, _, err = p.VarLen(); err != nil {
-				return eventChunk, false, err
-			}
-			if l != 2 {
-				return eventChunk, false, fmt.Errorf("Time Signature length not 2 as expected but %d", l)
+			if len(msgBytes) != 2 {
+				return eventChunk, false, fmt.Errorf("Time Signature length not 2 as expected but %d", len(msgBytes))
 			}
 
 			// key
+<<<<<<< HEAD
 			b, err = p.ReadByte()
 			if err != nil {
 				return eventChunk, false, err
 			}
 			e.Key = int32(b)
 
+=======
+			e.Key = int32(msgBytes[0])
+>>>>>>> master
 			// scale
-			b, err = p.ReadByte()
-			if err != nil {
-				return eventChunk, false, err
-			}
-			e.Scale = uint32(b)
+			e.Scale = uint32(msgBytes[1])
 
 		// Sequencer Specific
 		//This meta event is used to specify information specific to a hardware or software sequencer.
@@ -479,16 +440,16 @@ func (p *Decoder) parseMetaMsg(e *Event) (nextChunkType, bool, error) {
 		// and the following bytes contain information specified by the manufacturer.
 		// The individual manufacturers may document this information in their respective manuals.
 		case 0x7F:
-			var l uint32
-			if l, _, err = p.VarLen(); err != nil {
-				return eventChunk, false, err
-			}
 			// Information not currently stored
+<<<<<<< HEAD
 			tmp := make([]byte, l)
 			err = p.Read(tmp)
 			if err != nil {
 				return eventChunk, false, err
 			}
+=======
+			_ = msgBytes
+>>>>>>> master
 		default:
 			if p.Debug {
 				fmt.Printf("Skipped meta cmd %#X\n", e.Cmd)

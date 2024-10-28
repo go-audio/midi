@@ -1,0 +1,26 @@
+// Header chunk
+4D 54 68 64     // MThd
+00 00 00 06     // chunk length
+00 00           // format 0
+00 01           // one track
+00 60           // 96 per quarter-note 
+
+// Track chunk
+4D 54 72 6B     // MTrk
+00 00 00 3B     // chunk length (59)
+
+// Delta   Event
+   00      FF 58 04 04 02 18 08 // time signature
+   00      FF 51 03 07 A1 20    // tempo
+   00      C0 05
+   00      C1 2E
+   00      C2 46
+   00      92 30 60
+   00      3C 60                // running status
+   60      91 43 40
+   60      90 4C 20
+   81 40   82 30 40             // two-byte delta-time
+   00      3C 40                // running status
+   00      81 43 40
+   00      80 4C 40
+   00      FF 2F 00             // end of track

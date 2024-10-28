@@ -4,12 +4,15 @@ import (
 	"math"
 	"strconv"
 	"strings"
-
-	"github.com/mattetti/audio"
 )
 
 var (
 	Notes = []string{"C", "C#", "D", "D#", "E", "F", "F#", "G", "G#", "A", "A#", "B"}
+
+	// rootA or concert A is the reference frequency for A4.
+	// Modify this package variable if you need to change it to 435 (classical) or
+	// 415 (baroque). Methods refering to this root A note will use this variable.
+	rootA = 440.0
 )
 
 // NotesToInt is a map of note name to zero indexed position.
@@ -49,24 +52,24 @@ func KeyInt(n string, octave int) int {
 // KeyFreq returns the frequency for the given key/octave combo
 // https://en.wikipedia.org/wiki/MIDI_Tuning_Standard#Frequency_values
 func KeyFreq(n string, octave int) float64 {
-	return audio.RootA * math.Pow(2, (float64(KeyInt(n, octave)-69)/12))
+	return rootA * math.Pow(2, (float64(KeyInt(n, octave)-69)/12))
 }
 
 // NoteToFreq returns the frequency of the passed midi note.
 func NoteToFreq(note int) float64 {
-	return audio.RootA * math.Pow(2, (float64(note)-69.0)/12.0)
+	return rootA * math.Pow(2, (float64(note)-69.0)/12.0)
 }
 
 // NoteToName converts a midi note value into its English name
 func NoteToName(note int) string {
 	key := Notes[note%12]
-	octave := ((note / 12) | 0) - 2 // The MIDI scale starts at octave = -2
+	octave := note/12 - 2 // The MIDI scale starts at octave = -2
 	return key + strconv.Itoa(octave)
 }
 
 // NoteOctave returns the octave of the MIDI note
 func NoteOctave(note int) int {
-	return ((note / 12) | 0) - 2
+	return note/12 - 2
 }
 
 // FreqToNote reports the associated midi node for a given frequency.
